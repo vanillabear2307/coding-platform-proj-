@@ -29,10 +29,10 @@ passport.use(
           email: profile.emails[0].value,
         }).save();
         if (newUser) {
-          done(null, newUser);
+          return done(null, newUser);
         }
       }
-      done(null, currentUser);
+      return done(null, currentUser);
     }
   )
 );

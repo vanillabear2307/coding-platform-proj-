@@ -84,8 +84,7 @@ export default class Compiler extends Component {
             method: "POST",
             headers: {
               "x-rapidapi-host": "judge0-extra.p.rapidapi.com",
-              "x-rapidapi-key":
-                "62b1b5f315msh8d88d96b1858063p1af457jsn93a9017310e7",
+              "x-rapidapi-key": process.env.REACT_APP_JUDGE0_KEY,
               "content-type": "application/json",
               accept: "application/json",
             },

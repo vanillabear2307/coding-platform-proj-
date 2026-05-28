@@ -10,6 +10,7 @@ const passport = require("passport");
 const passportSetup = require("./server/config/passport-setup");
 const session = require("express-session");
 const authRoutes = require("./server/routes/auth-routes");
+const userRoutes = require("./server/routes/user");
 const User = require("./server/model/user-model");
 const keys = require("./server/config/keys");
 const cookieParser = require("cookie-parser"); // parse cookie header
@@ -65,6 +66,7 @@ app.get("/profile/:id", async (req, res) => {
   res.send({ err: "No User Found" });
 });
 app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
 
 
 if (process.env.NODE_ENV === 'production') {
