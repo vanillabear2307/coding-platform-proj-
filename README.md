@@ -1,11 +1,9 @@
 
- DSC Competitive Programming Portal                
-:-------------------------:
-![](https://i.imgur.com/m9tnXMu.png)    
+Competitive Programming Portal
 
 **A web portal which functions as an IDE (integrated development environment) with a primary focus on competitive coding.** 
 
-It is a **MERN** Stack Web Application and is currently maintained on GitHub by [DSC KIIT](https://dsckiit.tech/).
+It is a **MERN** Stack Web Application and is currently maintained on GitHub.
 
 -----
 
@@ -107,35 +105,6 @@ Editor,Compiler & Default Tests
 ![](https://i.imgur.com/PW7TAt0.png)
 
 -----
-
-
-Running against Custom input            
-:-------------------------:
-![](https://i.imgur.com/DKQ1uNZ.png)
-
-
-## Demo
-[![forthebadge](https://forthebadge.com/images/badges/check-it-out.svg)](https://dsc-kode.herokuapp.com/)
-
-
-
-**You can report your issues here :  https://github.com/RonitNayak25/DSC-CodingPortal/issues**
-
-
-
-
-
-## Contributors
-- Mentor - [Junaid Rahim](https://github.com/junaidrahim)
-
-- [Arpit Mohapatra](https://github.com/marpit19)
-
-- [Akash Gupta](https://github.com/akashgp09)
- 
-- [Anoushka Nandan](https://github.com/anoushkanandan)
-
-
-
 
 
 
