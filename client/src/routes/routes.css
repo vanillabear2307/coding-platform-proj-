@@ -1,41 +1,56 @@
+/* ============================================
+   Routes / Auth Wrappers — Dark Theme
+   ============================================ */
+
 .auth-wrapper {
   display: flex;
   justify-content: center;
-
-  text-align: left;
+  align-items: center;
+  min-height: calc(100vh - 56px);
+  padding: 40px 20px;
 }
 
 .auth-inner {
   width: 450px;
+  max-width: 100%;
   margin: auto;
-  background: #ffffff;
-  box-shadow: 0px 14px 80px rgba(34, 35, 58, 0.2);
-  padding: 30px 55px 35px 55px;
-  border-radius: 15px;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-lg);
+  padding: 40px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  animation: slideUp 0.4s ease;
 }
 
 .auth-wrapper .form-control:focus {
-  border-color: #167bff;
-  box-shadow: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .auth-wrapper h3 {
   text-align: center;
   margin: 0;
   line-height: 1;
-  padding-bottom: 20px;
+  padding-bottom: 24px;
+  color: var(--text-primary);
 }
 
 .custom-control-label {
   font-weight: 400;
+  color: var(--text-secondary);
 }
 
 .forgot-password {
-  font-size: 16px;
-
-  padding-top: 5px;
-  color: red;
+  font-size: 14px;
+  padding-top: 8px;
+  color: var(--accent-primary);
   margin: 0;
+  text-align: right;
+}
+
+.forgot-password a {
+  color: var(--accent-primary);
 }
 
 .coder-img {
@@ -44,10 +59,15 @@
   width: 100%;
   max-width: 500px;
   height: auto;
+  border-radius: var(--radius-lg);
+  opacity: 0.8;
+  mix-blend-mode: luminosity;
 }
+
 .form-group-signup {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
+
 @media only screen and (max-width: 1064px) {
   .coder-img {
     display: none;
@@ -56,11 +76,7 @@
 
 @media only screen and (max-width: 525px) {
   .auth-inner {
-    width: 360px;
-  }
-}
-@media only screen and (max-width: 400px) {
-  .auth-inner {
-    width: 300px;
+    width: 100%;
+    padding: 30px 24px;
   }
 }

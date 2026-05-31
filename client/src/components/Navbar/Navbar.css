@@ -1,183 +1,368 @@
+/* ============================================
+   Navbar — Dark LeetCode-style
+   ============================================ */
+
 .navbar {
-  background: #1c2237;
-  height: 80px;
+  background: var(--bg-navbar);
+  height: 56px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .navbar-container {
   display: flex;
   justify-content: space-between;
-  height: 80px;
-}
-
-.container {
-  z-index: 1;
+  align-items: center;
+  height: 56px;
   width: 100%;
-  max-width: 1300px;
-  margin-right: auto;
-  margin-left: auto;
-  padding-right: 50px;
-  padding-left: 50px;
+  max-width: 1400px;
+  padding: 0 24px;
 }
 
 .navbar-logo {
-  color: #fff;
+  color: var(--text-primary);
   justify-self: start;
   cursor: pointer;
   text-decoration: none;
-  font-size: 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
+  gap: 10px;
+  transition: color var(--transition-fast);
 }
 
-.navbar-icon {
-  margin-right: 0.5rem;
+.navbar-logo:hover {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.navbar-logo img {
+  height: 28px;
+  width: auto;
+}
+
+.navbar-logo .brand-text {
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
 }
 
 .nav-menu {
   display: flex;
   align-items: center;
-  justify-content: center;
   list-style: none;
   text-align: center;
-  justify-content: end;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
 }
 
 .nav-item {
-  height: 80px;
-  border-bottom: 2px solid transparent;
-}
-
-.nav-item:hover {
-  text-decoration: none;
-  border-bottom: 2px solid #f00946;
+  position: relative;
+  height: 56px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-links {
-  color: #fff;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  height: 100%;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  height: auto;
 }
 
-.fa-bars {
-  color: #fff;
+.nav-links:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  text-decoration: none;
 }
 
+.nav-links.active {
+  color: var(--accent-primary);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Profile Avatar */
+.profile-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profile-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-primary);
+  object-fit: cover;
+  transition: all var(--transition-fast);
+}
+
+.profile-img:hover {
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* Auth Buttons */
+.nav-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  background: var(--accent-primary);
+  color: #000;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.nav-login-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-glow);
+  color: #000;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.nav-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 18px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.nav-logout-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+  background: var(--bg-surface);
+  text-decoration: none;
+}
+
+/* Mobile Menu Icon */
 .menu-icon {
   display: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 1.4rem;
 }
 
-@media screen and (max-width: 960px) {
-  .NavbarItems {
-    position: relative;
+/* Login Modal Overlay */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.login-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  animation: slideUp 0.3s ease;
+  box-shadow: var(--shadow-lg);
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.login-modal-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-input);
+}
+
+.login-modal h3 {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.login-modal .login-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 28px;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.login-divider span {
+  padding: 0 12px;
+}
+
+/* Style for Google login button from react-social-login-buttons */
+.login-modal button[class*="btn"],
+.login-modal div[role="button"] {
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-family) !important;
+}
+
+/* Mobile Responsive */
+@media screen and (max-width: 768px) {
+  .navbar-container {
+    padding: 0 16px;
+  }
+
+  .menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
   }
 
   .nav-menu {
     display: flex;
     flex-direction: column;
-    width: 100%;
-    height: 90vh;
-    position: absolute;
-    top: 80px;
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
     left: -100%;
-    opacity: 1;
-    transition: all 0.5s ease;
+    background: var(--bg-navbar);
+    border-right: 1px solid var(--border);
+    padding-top: 72px;
+    transition: left 0.3s ease;
+    gap: 0;
+    z-index: 999;
   }
 
   .nav-menu.active {
-    background: #1c2237;
     left: 0;
-    opacity: 1;
-    transition: all 0.6s ease;
-    z-index: 1;
-  }
-
-  .nav-links {
-    text-align: center;
-    padding: 2rem;
-    width: 100%;
-    display: table;
-  }
-
-  .nav-links:hover {
-    text-decoration: none;
-    color: #f00946;
-    transform: scale(1.2);
-    transition: all 0.3s ease;
-  }
-
-  .nav-item:hover {
-    border: none;
+    box-shadow: var(--shadow-lg);
   }
 
   .nav-item {
     width: 100%;
+    height: auto;
   }
 
-  .navbar-logo {
-    position: absolute;
+  .nav-links {
+    width: 100%;
+    padding: 14px 24px;
+    justify-content: flex-start;
+    border-radius: 0;
+    font-size: 15px;
+  }
+
+  .nav-links:hover {
+    background: var(--bg-surface);
+  }
+
+  .nav-right {
+    flex-direction: column;
+    width: 100%;
+    padding: 16px 24px;
+    gap: 12px;
+  }
+
+  .nav-login-btn,
+  .nav-logout-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .profile-avatar {
+    margin: 8px 0;
+  }
+
+  /* Mobile menu overlay */
+  .mobile-overlay {
+    position: fixed;
     top: 0;
     left: 0;
-    transform: translate(25%, 50%);
-  }
-
-  .menu-icon {
-    display: block;
-    position: absolute;
-    top: 0;
     right: 0;
-    transform: translate(-100%, 60%);
-    font-size: 1.8rem;
-    cursor: pointer;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    display: none;
   }
 
-  .fa-times {
-    color: #fff;
-    font-size: 2rem;
-  }
-
-  .nav-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 120px;
+  .mobile-overlay.active {
+    display: block;
   }
 }
 
-.auth-wrapper {
-  display: flex;
-  justify-content: center;
-
-  text-align: left;
-}
-
+/* Remove old bootstrap modal overrides */
 .dec {
   text-decoration: none;
 }
-.modal-body {
-  padding: 1.5rem;
-}
-.profile-img {
-  border-radius: 50%;
-  width: 43px !important;
-  height: 43px !important;
-  border: 3.5px solid #fff;
-}
-.profile-text {
-  font-size: 25px;
-  text-decoration: none;
-  color: aliceblue;
-}
-.profile-text a {
+
+.btn-link {
   text-decoration: none;
 }

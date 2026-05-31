@@ -3,64 +3,64 @@ const Question = require("../model/question");
 const router = express.Router();
 
 router.get("/id/:id", async (req, res) => {
-  let questions = await Question.find({ _id: req.query.id });
-  if (questions) {
-    return res.status(200).json(questions);
+  try {
+    let questions = await Question.find({ _id: req.query.id });
+    if (questions && questions.length > 0) {
+      return res.status(200).json(questions);
+    }
+    res.send({ err: "No Questions Found" });
+  } catch (err) {
+    console.error("Error finding question:", err);
+    res.status(400).send({ err: "Invalid Question ID" });
   }
-  res.send({ err: "No Questions Found" });
 });
 
 router.get("/:info", async (req, res) => {
-  if (req.query.tag == "none") {
-    let questions = await Question.find({
-      $and: [
-        {
-          language: req.query.language,
-        },
-        { medium: req.query.medium },
-      ],
-    });
-
+  try {
+    let query = {};
+    if (req.query.language && req.query.language !== "all") {
+      query.language = req.query.language;
+    }
+    if (req.query.medium && req.query.medium !== "all") {
+      query.medium = req.query.medium;
+    }
+    if (req.query.tag && req.query.tag !== "all" && req.query.tag !== "none") {
+      query.tag = req.query.tag;
+    }
+    
+    let questions = await Question.find(query);
     if (questions) {
       return res.status(200).json(questions);
     }
     res.send({ err: "No Questions Found" });
-  } else {
-    let questions = await Question.find({
-      $and: [
-        {
-          language: req.query.language,
-        },
-
-        { medium: req.query.medium },
-        { tag: req.query.tag },
-      ],
-    });
-
-    if (questions) {
-      return res.status(200).json(questions);
-    }
-    res.send({ err: "No Questions Found" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ err: "Server Error" });
   }
 });
 router.post("/add", async (req, res) => {
-
-  let question = new Question({
-    title: req.body.title,
-    language: req.body.language,
-    tag: req.body.tag,
-    description: req.body.description,
-    instruction: req.body.instruction,
-    medium: req.body.medium,
-    solution: req.body.solution,
-    testCases: JSON.parse(req.body.testCases),
-  });
-
   try {
+    let testCasesVal = req.body.testCases;
+    if (typeof testCasesVal === "string") {
+      testCasesVal = JSON.parse(testCasesVal);
+    }
+
+    let question = new Question({
+      title: req.body.title,
+      language: req.body.language,
+      tag: req.body.tag,
+      description: req.body.description,
+      instruction: req.body.instruction,
+      medium: req.body.medium,
+      solution: req.body.solution,
+      testCases: testCasesVal,
+    });
+
     await question.save();
-    res.send({ message: "Saved Successfully" });
+    res.status(200).json({ message: "Saved Successfully" });
   } catch (e) {
-    res.send({ err: "Something Went Wrong" });
+    console.error("Error adding question:", e);
+    res.status(400).json({ err: e.message || "Something Went Wrong" });
   }
 });
 module.exports = router;

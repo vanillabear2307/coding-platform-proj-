@@ -1,12 +1,224 @@
-/* nav {
-  z-index: -1;
-} */
-#sec-navbar {
-  padding-top: 3px;
-  margin: 7.5px 0px;
-  font-size: 22px;
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: #ecf4ff !important;
-  z-index: 10;
+/* ============================================
+   Codingpage — Split-pane dark layout
+   ============================================ */
+
+.coding-page {
+  display: flex;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Tab Bar */
+.coding-tabs {
+  display: flex;
+  background: var(--bg-navbar);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  gap: 0;
+}
+
+.coding-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  position: relative;
+  transition: color var(--transition-fast);
+  font-family: var(--font-family);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coding-tab:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.coding-tab.active {
+  color: var(--accent-primary);
+}
+
+.coding-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  border-radius: 2px 2px 0 0;
+}
+
+/* Left Panel - Description */
+.coding-left-panel {
+  width: 45%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+.coding-left-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Right Panel - Editor + Output */
+.coding-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-editor);
+  overflow: hidden;
+}
+
+/* Markdown Content Styling */
+.markdown-content {
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  color: var(--text-primary);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.markdown-content p {
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.markdown-content code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent-primary);
+}
+
+.markdown-content pre {
+  background: var(--bg-editor);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  color: var(--text-secondary);
+  padding-left: 24px;
+  margin-bottom: 12px;
+}
+
+.markdown-content li {
+  margin-bottom: 4px;
+}
+
+.markdown-content strong {
+  color: var(--text-primary);
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 16px;
+  margin: 16px 0;
+  color: var(--text-muted);
+}
+
+/* Loading State */
+.coding-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 56px);
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* Mobile Toggle */
+.mobile-panel-toggle {
+  display: none;
+  background: var(--bg-navbar);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+  gap: 4px;
+}
+
+.mobile-panel-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.mobile-panel-btn.active {
+  background: var(--bg-surface);
+  color: var(--accent-primary);
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .coding-page {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 56px);
+  }
+
+  .coding-left-panel {
+    width: 100%;
+    min-width: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .coding-left-panel.hidden {
+    display: none;
+  }
+
+  .coding-right-panel {
+    width: 100%;
+  }
+
+  .coding-right-panel.hidden {
+    display: none;
+  }
+
+  .mobile-panel-toggle {
+    display: flex;
+  }
+
+  .coding-left-content {
+    padding: 16px;
+    max-height: 50vh;
+  }
 }
