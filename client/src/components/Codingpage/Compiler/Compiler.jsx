@@ -1,23 +1,21 @@
 import React, { Component } from "react";
-import { Controlled as CodeMirror } from "react-codemirror2";
-import "codemirror/addon/display/autorefresh";
-import "codemirror/addon/comment/comment";
-import "codemirror/addon/edit/matchbrackets";
-import "codemirror/keymap/sublime";
-import "codemirror/theme/monokai.css";
-import "codemirror/theme/cobalt.css";
-import "codemirror/theme/material-ocean.css";
-import "codemirror/theme/neo.css";
-import "codemirror/lib/codemirror.css";
-import "codemirror/theme/paraiso-light.css";
-import "codemirror/mode/clike/clike";
-import "codemirror/mode/python/python";
+import Editor from "@monaco-editor/react";
 import "./Compiler.css";
 import { io } from "socket.io-client";
 import Split from "react-split";
+import ThemeContext from "../../../ThemeContext";
+
+const LANGUAGE_MAP = {
+  cpp: "cpp",
+  c: "c",
+  java: "java",
+  python3: "python",
+};
 
 let checkErr;
 export default class Compiler extends Component {
+  static contextType = ThemeContext;
+
   constructor(props) {
     super(props);
     this.socket = io("http://localhost:5000");
@@ -26,7 +24,6 @@ export default class Compiler extends Component {
       output: ``,
       language_id: localStorage.getItem("languageId") || "cpp",
       user_input: ``,
-      theme: localStorage.getItem("theme") || `material-ocean`,
       checkedBox: true,
       isRunning: false,
       activeCaseIndex: 0,
@@ -46,15 +43,9 @@ export default class Compiler extends Component {
     localStorage.setItem("languageId", event.target.value);
   };
   
-  theme = (event) => {
-    event.preventDefault();
-    this.setState({ theme: event.target.value });
-    localStorage.setItem("theme", event.target.value);
-  };
-  
-  updateCode = (editor, value) => {
-    this.setState({ input: editor.getValue() });
-    sessionStorage.setItem("sourceCode", editor.getValue());
+  handleEditorChange = (value) => {
+    this.setState({ input: value || "" });
+    sessionStorage.setItem("sourceCode", value || "");
   };
   
   handleCheckbox = () => {
@@ -184,6 +175,9 @@ export default class Compiler extends Component {
   };
 
   render() {
+    const { theme } = this.context;
+    const monacoTheme = theme === "dark" ? "vs-dark" : "light";
+
     return (
       <Split 
         direction="vertical" 
@@ -215,17 +209,6 @@ export default class Compiler extends Component {
               <option value="java">Java</option>
               <option value="python3">Python</option>
             </select>
-            
-            <select
-              value={this.state.theme}
-              onChange={this.theme}
-              className="editor-select"
-            >
-              <option value="monokai">Monokai</option>
-              <option value="cobalt">Cobalt</option>
-              <option value="material-ocean">Material Ocean</option>
-              <option value="neo">Neo</option>
-            </select>
           </div>
           
           <div className="compiler-actions">
@@ -244,26 +227,26 @@ export default class Compiler extends Component {
           </div>
         </div>
 
-        {/* Code Editor */}
+        {/* Monaco Code Editor */}
         <div className="ide-wrapper">
-          <CodeMirror
+          <Editor
             value={this.state.input}
+            language={LANGUAGE_MAP[this.state.language_id] || "cpp"}
+            theme={monacoTheme}
+            onChange={this.handleEditorChange}
             options={{
-              theme: this.state.theme,
+              fontSize: 14,
+              fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
               tabSize: 4,
-              keyMap: "sublime",
-              mode: "text/x-csrc",
-              lineNumbers: true,
-              matchBrackets: true,
-              autoRefresh: true
-            }}
-            onBeforeChange={(editor, data, value) => {
-              this.setState({ input: value });
-              sessionStorage.setItem("sourceCode", value);
-            }}
-            onChange={(editor, data, value) => {
-              this.setState({ input: value });
-              sessionStorage.setItem("sourceCode", value);
+              wordWrap: "on",
+              lineNumbers: "on",
+              renderLineHighlight: "line",
+              matchBrackets: "always",
+              suggestOnTriggerCharacters: true,
+              padding: { top: 12 },
             }}
           />
             </div>

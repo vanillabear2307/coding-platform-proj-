@@ -4,14 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react({ jsxRuntime: 'classic' })],
   define: {
-    'process.env': {},
-    'process.cwd': '() => "/"'
-  },
-  resolve: {
-    alias: {
-      'codemirror/mode/clike/clike.js': 'codemirror/mode/clike/clike',
-      'codemirror/mode/python/python.js': 'codemirror/mode/python/python'
-    }
+    'process.env': {}
   },
   server: {
     port: 3000,

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Routes from "./routes/routes";
 import Navbar from "./components/Navbar/Navbar";
+import { ThemeProvider } from "./ThemeContext";
 import "./App.css";
 
 class App extends Component {
@@ -43,20 +44,23 @@ class App extends Component {
   };
   render() {
     return (
-      <div className="App">
-        <Navbar
-          authenticated={this.state.authenticated}
-          user={this.state.user}
-          handleNotAuthenticated={this.handleNotAuthenticated}
-        />
-        <div className="app-content">
-          <Routes
+      <ThemeProvider>
+        <div className="App">
+          <Navbar
             authenticated={this.state.authenticated}
             user={this.state.user}
+            handleNotAuthenticated={this.handleNotAuthenticated}
           />
+          <div className="app-content">
+            <Routes
+              authenticated={this.state.authenticated}
+              user={this.state.user}
+            />
+          </div>
         </div>
-      </div>
+      </ThemeProvider>
     );
   }
 }
 export default App;
+

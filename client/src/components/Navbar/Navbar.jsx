@@ -1,16 +1,19 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { FaBars, FaTimes, FaSun, FaMoon } from "react-icons/fa";
 import "./Navbar.css";
 import {
   GoogleLoginButton,
 } from "react-social-login-buttons";
 import PropTypes from "prop-types";
+import ThemeContext from "../../ThemeContext";
 
 export default class Navbar extends Component {
   static propTypes = {
     authenticated: PropTypes.bool.isRequired,
   };
+
+  static contextType = ThemeContext;
 
   constructor(props) {
     super(props);
@@ -58,6 +61,7 @@ export default class Navbar extends Component {
   render() {
     const { authenticated } = this.props;
     const { user } = this.props;
+    const { theme, toggleTheme } = this.context;
 
     window.addEventListener("resize", this.showButton);
     return (
@@ -73,7 +77,7 @@ export default class Navbar extends Component {
             </Link>
 
             <div className="menu-icon" onClick={this.handleClick}>
-              {this.state.click ? <FaTimes color="#eff1f6" /> : <FaBars color="#eff1f6" />}
+              {this.state.click ? <FaTimes color="var(--text-primary)" /> : <FaBars color="var(--text-primary)" />}
             </div>
 
             {/* Mobile overlay */}
@@ -100,6 +104,20 @@ export default class Navbar extends Component {
                   Problems
                 </Link>
               </li>
+
+              {/* Mobile-only theme toggle */}
+              {!this.state.button && (
+                <li className="nav-item">
+                  <button
+                    className="theme-toggle-btn nav-links"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                  >
+                    {theme === "dark" ? <FaSun /> : <FaMoon />}
+                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  </button>
+                </li>
+              )}
 
               {/* Mobile-only auth actions */}
               {!this.state.button && (
@@ -141,9 +159,21 @@ export default class Navbar extends Component {
               )}
             </ul>
 
-            {/* Desktop auth actions */}
+            {/* Desktop actions */}
             {this.state.button && (
               <div className="nav-right">
+                {/* Theme toggle */}
+                <button
+                  className="theme-toggle-btn"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                  title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                >
+                  <span className={`theme-icon ${theme === "dark" ? "icon-sun" : "icon-moon"}`}>
+                    {theme === "dark" ? <FaSun /> : <FaMoon />}
+                  </span>
+                </button>
+
                 {!authenticated ? (
                   <button className="nav-login-btn" onClick={this.handleShow}>
                     Sign In
@@ -185,11 +215,11 @@ export default class Navbar extends Component {
                   fontSize: '15px',
                   fontFamily: "'Inter', sans-serif",
                   boxShadow: 'none',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-input)',
                 }}
                 activeStyle={{
-                  background: 'rgba(255,255,255,0.1)',
+                  background: 'var(--bg-surface-hover)',
                 }}
               />
             </div>
