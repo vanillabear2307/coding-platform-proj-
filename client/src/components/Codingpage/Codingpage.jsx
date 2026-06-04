@@ -74,7 +74,8 @@ export default class Codingpage extends Component {
             </button>
           </div>
 
-          {/* Left Panel - Description / Solution */}
+          <Compiler testCases={testCases} mobilePanel={this.state.mobilePanel}>
+            {/* Left Panel - Description / Solution */}
           <div className={`coding-left-panel ${this.state.mobilePanel !== 'left' ? 'hidden' : ''}`}>
             <div className="coding-tabs">
               <button 
@@ -100,10 +101,7 @@ export default class Codingpage extends Component {
             </div>
           </div>
 
-          {/* Right Panel - Code Editor / Output */}
-          <div className={`coding-right-panel ${this.state.mobilePanel !== 'right' ? 'hidden' : ''}`}>
-            <Compiler testCases={testCases} />
-          </div>
+          </Compiler>
         </div>
       );
     } else if (this.state.question && this.state.question.err) {

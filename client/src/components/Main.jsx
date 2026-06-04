@@ -25,38 +25,17 @@ const Main = () => {
       <section className="hero-section">
         <div className="container">
           <div className="hero-content animate-slide-up">
-            <h1>Master Algorithms &amp; Data Structures</h1>
+            <h1>CodeArena: Competitive Programming Platform</h1>
             <p>
-              Sharpen your coding skills with curated problems, real-time code
-              execution, and a competitive programming environment. Join
-              thousands of developers leveling up their skills.
+              A full-stack algorithmic coding platform built as a college mini-project. Featuring a secure Docker-based execution engine, real-time code evaluation, and a curated problem set.
             </p>
             <div className="hero-cta">
               <Link to="/compete" className="btn-accent">
-                Start Practicing →
+                View Problems →
               </Link>
               <Link to="/add" className="btn-ghost">
-                Contribute Problems
+                Admin Panel
               </Link>
-            </div>
-
-            <div className="stats-row">
-              <div className="stat-item">
-                <span className="stat-number">500+</span>
-                <span className="stat-label">Problems</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">4</span>
-                <span className="stat-label">Languages</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">10K+</span>
-                <span className="stat-label">Users</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-number">50K+</span>
-                <span className="stat-label">Submissions</span>
-              </div>
             </div>
           </div>
         </div>
@@ -66,70 +45,47 @@ const Main = () => {
       <section className="features-section">
         <div className="container">
           <h2 style={{ textAlign: 'center' }}>
-            Why Practice Competitive Programming?
+            Project Architecture & Features
           </h2>
           <p style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 40px' }}>
-            Build the skills that top companies look for. From algorithms to system design,
-            practice makes perfect.
+            Built using the MERN stack with a custom containerized execution environment.
           </p>
 
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon" style={{ background: 'var(--accent-glow)' }}>
-                🏢
+                🐳
               </div>
-              <h3>Land Top Offers</h3>
+              <h3>Docker Sandbox Execution</h3>
               <p>
-                Companies like Google, Apple, and Meta actively recruit from
-                competitive programming communities. Stand out in technical
-                interviews.
+                Code submissions are executed in isolated, secure Docker containers with strict memory, CPU, and network limitations.
               </p>
             </div>
 
             <div className="feature-card">
               <div className="feature-icon" style={{ background: 'var(--easy-bg)' }}>
-                🧩
+                ⚡
               </div>
-              <h3>Solve Complex Problems</h3>
+              <h3>Real-Time WebSockets</h3>
               <p>
-                Train with challenging problems that push your limits. Learn to
-                break down complex tasks into elegant, efficient solutions.
+                Execution outputs are streamed in real-time via Socket.io directly to the frontend React application.
               </p>
             </div>
 
             <div className="feature-card">
               <div className="feature-icon" style={{ background: 'var(--medium-bg)' }}>
-                👥
+                🧠
               </div>
-              <h3>Build Team Skills</h3>
+              <h3>AI/ML Ready</h3>
               <p>
-                Competitive programming teaches you to collaborate effectively,
-                assess strengths, and divide responsibilities — essential for any
-                engineering role.
+                Designed with architectural support for future AI integrations, including AST-based code plagiarism detection and automated test case generation.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Newsletter CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <h2>Stay in the Loop</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Get notified about new problems, contests, and platform updates.
-          </p>
 
-          <form className="newsletter-form" onSubmit={join}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              onChange={(e) => setJoined(e.target.value)}
-            />
-            <input type="submit" value="Subscribe" />
-          </form>
-        </div>
-      </section>
     </React.Fragment>
   );
 };

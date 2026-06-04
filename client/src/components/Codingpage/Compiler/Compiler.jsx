@@ -13,11 +13,14 @@ import "codemirror/theme/paraiso-light.css";
 import "codemirror/mode/clike/clike";
 import "codemirror/mode/python/python";
 import "./Compiler.css";
+import { io } from "socket.io-client";
+import Split from "react-split";
 
 let checkErr;
 export default class Compiler extends Component {
   constructor(props) {
     super(props);
+    this.socket = io("http://localhost:5000");
     this.state = {
       input: sessionStorage.getItem("sourceCode") || "",
       output: ``,
@@ -26,11 +29,14 @@ export default class Compiler extends Component {
       theme: localStorage.getItem("theme") || `material-ocean`,
       checkedBox: true,
       isRunning: false,
+      activeCaseIndex: 0,
+      testResults: null,
+      overallStatus: null,
+      overallPassed: 0
     };
   }
 
   userInput = (event) => {
-    event.preventDefault();
     this.setState({ user_input: event.target.value });
   };
 
@@ -54,108 +60,113 @@ export default class Compiler extends Component {
   handleCheckbox = () => {
     this.setState({ checkedBox: !this.state.checkedBox });
   };
+
+  componentWillUnmount() {
+    if (this.socket) this.socket.disconnect();
+  }
+
+  executeWithSocket = (language, code, stdin) => {
+    return new Promise((resolve) => {
+      let fullOutput = "";
+      this.socket.off('output');
+      this.socket.off('done');
+      
+      this.socket.on('output', (data) => {
+        fullOutput += data;
+        let outputText = document.getElementById("terminal-output");
+        if (outputText && !this.state.checkedBox) {
+          outputText.innerHTML += data.replace(/\n/g, '<br/>');
+        }
+      });
+      
+      this.socket.on('done', (result) => {
+        resolve({
+          exit_code: result.status === 'success' ? 0 : 1,
+          stdout: fullOutput,
+          stderr: result.status === 'error' ? result.message : null,
+          execution_time_ms: 'N/A',
+          memory_used_kb: 'N/A'
+        });
+      });
+      
+      this.socket.emit('execute', { language, code, stdin });
+    });
+  };
   
   submit = async (e) => {
     e.preventDefault();
     this.setState({ isRunning: true });
 
     if (this.state.checkedBox) {
-      let sampleInput = ``;
-      let sampleOutput = ``;
-      let actualOutput = ``;
       let testPassed = 0;
       checkErr = false;
       let testCases = this.props.testCases;
       
-      let outputText = document.getElementById("terminal-output");
-      outputText.innerHTML = "Submitting code to Judge0...<br />";
+      let resultsArray = [];
+      this.setState({ testResults: [], overallStatus: null, overallPassed: 0, activeCaseIndex: 0 });
 
       for (let i = 0; i < testCases.length; i++) {
-        sampleOutput += `<div class="io-block"><span class="io-label">Expected Output ${i + 1}</span><span class="io-value">${testCases[i].output}</span></div>`;
-        sampleInput += `<div class="io-block"><span class="io-label">Input ${i + 1}</span><span class="io-value">${testCases[i].input}</span></div>`;
-        
-        if (i > 0) {
-          outputText.innerHTML = `Running test case ${i+1}/${testCases.length}...<br />`;
-        }
-
-        const response = await fetch(
-          "https://sandboxapi.p.rapidapi.com/v1/execute",
-          {
-            method: "POST",
-            headers: {
-              "x-rapidapi-host": "sandboxapi.p.rapidapi.com",
-              "x-rapidapi-key": import.meta.env.VITE_JUDGE0_KEY,
-              "content-type": "application/json",
-              accept: "application/json",
-            },
-            body: JSON.stringify({
-              language: this.state.language_id,
-              code: this.state.input || "",
-              stdin: testCases[i].input || "",
-            }),
-          }
+        const jsonGetSolution = await this.executeWithSocket(
+          this.state.language_id,
+          this.state.input || "",
+          testCases[i].input || ""
         );
-
-        const jsonGetSolution = await response.json();
         
-        if (jsonGetSolution.exit_code !== 0 && jsonGetSolution.stderr) {
-          checkErr = true;
-          if (i === testCases.length - 1) {
-            outputText.innerHTML = `<span style="color: var(--error)">Error:</span><br/><pre style="color: var(--error); background: transparent; border: none; padding: 0;">${jsonGetSolution.stderr}</pre>`;
-          }
-        } else if (jsonGetSolution.exit_code === 0 && (jsonGetSolution.stdout || jsonGetSolution.stdout === "")) {
-          const output = jsonGetSolution.stdout;
-          if (output.trim() == testCases[i].output.trim()) {
-            testPassed++;
-          }
-          actualOutput += `<div class="io-block"><span class="io-label">Your Output ${i + 1}</span><span class="io-value">${output}</span></div>`;
+        let resultObj = {
+           input: testCases[i].input,
+           expectedOutput: testCases[i].output,
+           actualOutput: "",
+           status: "",
+           runtime: "N/A",
+           memory: "N/A",
+           stderr: null
+        };
 
-          if (i === testCases.length - 1) {
-            outputText.innerHTML = `<div class="execution-info">Execution Time: ${jsonGetSolution.execution_time_ms}ms | Memory: ${jsonGetSolution.memory_used_kb}KB</div>`;
-            if (jsonGetSolution.stderr) {
-               outputText.innerHTML += `<div style="color: #ffb86c; font-size: 12px; margin-top: 5px;">Warning: ${jsonGetSolution.stderr}</div>`;
-            }
-          }
+        if (jsonGetSolution.exit_code !== 0 && jsonGetSolution.stderr) {
+           checkErr = true;
+           resultObj.status = "Error";
+           resultObj.stderr = jsonGetSolution.stderr;
+        } else if (jsonGetSolution.exit_code === 0 && (jsonGetSolution.stdout || jsonGetSolution.stdout === "")) {
+           const output = jsonGetSolution.stdout;
+           resultObj.actualOutput = output;
+           resultObj.runtime = jsonGetSolution.execution_time_ms;
+           resultObj.memory = jsonGetSolution.memory_used_kb;
+           resultObj.stderr = jsonGetSolution.stderr;
+           
+           if (output.trim() == testCases[i].output.trim()) {
+             testPassed++;
+             resultObj.status = "Accepted";
+           } else {
+             resultObj.status = "Wrong Answer";
+           }
         } else {
-          checkErr = true;
-          if (i === testCases.length - 1) {
-            outputText.innerHTML = `<span style="color: var(--error)">API Error:</span><br/><pre style="color: var(--error); background: transparent; border: none; padding: 0;">${JSON.stringify(jsonGetSolution)}</pre>`;
-          }
+           checkErr = true;
+           resultObj.status = "API Error";
+           resultObj.stderr = JSON.stringify(jsonGetSolution);
         }
+        
+        resultsArray.push(resultObj);
+        this.setState({ testResults: [...resultsArray] });
       }
       
-      if (testPassed == testCases.length) {
-        if (!checkErr) {
-          outputText.innerHTML = `<span class="test-passed"><i class="fas fa-check-circle"></i> Accepted</span>` + actualOutput + outputText.innerHTML;
-        }
-      } else {
-        if (!checkErr) {
-          outputText.innerHTML = `<span class="test-failed"><i class="fas fa-times-circle"></i> Wrong Answer (${testPassed}/${testCases.length} passed)</span>` + sampleInput + sampleOutput + actualOutput + outputText.innerHTML;
-        }
-      }
+      let finalStatus = "Accepted";
+      if (checkErr) finalStatus = "Error";
+      else if (testPassed !== testCases.length) finalStatus = "Wrong Answer";
+      
+      this.setState({ 
+         testResults: resultsArray,
+         overallStatus: finalStatus,
+         overallPassed: testPassed
+      });
     } else {
       let outputText = document.getElementById("terminal-output");
       outputText.innerHTML = "Running custom input...<br />";
       
-      const response = await fetch(
-        "https://sandboxapi.p.rapidapi.com/v1/execute",
-        {
-          method: "POST",
-          headers: {
-            "x-rapidapi-host": "sandboxapi.p.rapidapi.com",
-            "x-rapidapi-key": import.meta.env.VITE_JUDGE0_KEY,
-            "content-type": "application/json",
-            accept: "application/json",
-          },
-          body: JSON.stringify({
-            language: this.state.language_id,
-            code: this.state.input || "",
-            stdin: this.state.user_input || "",
-          }),
-        }
+      const jsonGetSolution = await this.executeWithSocket(
+        this.state.language_id,
+        this.state.input || "",
+        this.state.user_input || ""
       );
-      
-      const jsonGetSolution = await response.json();
       
       if (jsonGetSolution.exit_code !== 0 && jsonGetSolution.stderr) {
         outputText.innerHTML = `<span style="color: var(--error)">Error:</span><br/><pre style="color: var(--error); background: transparent; border: none; padding: 0;">${jsonGetSolution.stderr}</pre>`;
@@ -174,9 +185,25 @@ export default class Compiler extends Component {
 
   render() {
     return (
-      <div className="compiler-container">
-        {/* Editor Toolbar */}
-        <div className="compiler-toolbar">
+      <Split 
+        direction="vertical" 
+        sizes={[65, 35]} 
+        minSize={100}
+        gutterSize={10}
+        className="compiler-page-wrapper"
+      >
+        <Split
+          direction="horizontal"
+          sizes={[40, 60]}
+          minSize={250}
+          gutterSize={10}
+          className="compiler-top-half"
+        >
+          {this.props.children}
+          
+          <div className={`coding-right-panel ${this.props.mobilePanel && this.props.mobilePanel !== 'right' ? 'hidden' : ''}`}>
+            {/* Editor Toolbar */}
+            <div className="compiler-toolbar">
           <div className="compiler-controls">
             <select
               value={this.state.language_id}
@@ -239,35 +266,100 @@ export default class Compiler extends Component {
               sessionStorage.setItem("sourceCode", value);
             }}
           />
-        </div>
+            </div>
+          </div>
+        </Split>
 
         {/* Terminal Output */}
         <div className="terminal-panel">
-          <div className="terminal-header">
-            <span className="terminal-title">Test Results</span>
-            <label className="custom-input-toggle">
-              <input
-                type="checkbox"
-                checked={!this.state.checkedBox}
-                onChange={this.handleCheckbox}
-              />
-              Custom Input
-            </label>
+          <div className="terminal-header" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-start' }}>
+            <button 
+               className={`terminal-tab-btn ${this.state.checkedBox ? 'active' : ''}`}
+               onClick={(e) => { e.preventDefault(); this.setState({ checkedBox: true }); }}
+            >Test Results</button>
+            <button 
+               className={`terminal-tab-btn ${!this.state.checkedBox ? 'active' : ''}`}
+               onClick={(e) => { e.preventDefault(); this.setState({ checkedBox: false }); }}
+            >Custom Input</button>
           </div>
           
-          {!this.state.checkedBox ? (
-            <textarea 
-              className="custom-textarea"
-              placeholder="Enter custom stdin here..."
-              onChange={this.userInput}
-            ></textarea>
-          ) : (
-            <div className="terminal-content" id="terminal-output">
-              <span style={{ color: 'var(--text-muted)' }}>Run your code to see output here.</span>
+          {!this.state.checkedBox && (
+            <div className="custom-input-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <textarea 
+                className="custom-textarea"
+                placeholder="Enter custom stdin here..."
+                value={this.state.user_input}
+                onChange={this.userInput}
+                style={{ flex: '0 0 50%', borderBottom: '1px solid var(--border)' }}
+              ></textarea>
+              <div className="terminal-content" id="terminal-output" style={{ flex: '1', overflowY: 'auto', padding: '16px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Run your code to see output here.</span>
+              </div>
+            </div>
+          )}
+
+          {this.state.checkedBox && (
+            <div className="test-results-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '16px', overflowY: 'auto' }}>
+               {!this.state.testResults ? (
+                  <span style={{ color: 'var(--text-muted)' }}>Run your code to see output here.</span>
+               ) : (
+                  <div>
+                    {/* Overall Status */}
+                    <div style={{ marginBottom: '16px' }}>
+                       <span className={this.state.overallStatus === 'Accepted' ? 'test-passed' : 'test-failed'} style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {this.state.overallStatus === 'Accepted' ? <><i className="fas fa-check-circle"></i> Accepted</> : 
+                           this.state.overallStatus === 'Error' ? <><i className="fas fa-exclamation-circle"></i> Error</> : 
+                           <><i className="fas fa-times-circle"></i> Wrong Answer ({this.state.overallPassed}/{this.props.testCases.length} passed)</>}
+                       </span>
+                    </div>
+                    {/* Pills */}
+                    <div className="case-pills" style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '8px' }}>
+                       {this.state.testResults.map((result, idx) => (
+                          <button 
+                             key={idx}
+                             className={`case-pill ${this.state.activeCaseIndex === idx ? 'active' : ''}`}
+                             onClick={(e) => { e.preventDefault(); this.setState({ activeCaseIndex: idx }); }}
+                          >
+                             <span className={`case-dot ${result.status === 'Accepted' ? 'green' : 'red'}`}>•</span> Case {idx + 1}
+                          </button>
+                       ))}
+                       {this.state.isRunning && this.state.testResults.length < this.props.testCases.length && (
+                          <span style={{ color: 'var(--text-muted)', padding: '6px 12px', fontSize: '13px' }}><i className="fas fa-circle-notch fa-spin"></i> Running...</span>
+                       )}
+                    </div>
+                    {/* Active Case Details */}
+                    {this.state.testResults[this.state.activeCaseIndex] && (
+                       <div className="case-details">
+                          <div className="io-block">
+                             <span className="io-label">Input</span>
+                             <div className="io-value">{this.state.testResults[this.state.activeCaseIndex].input}</div>
+                          </div>
+                          <div className="io-block">
+                             <span className="io-label">Expected Output</span>
+                             <div className="io-value">{this.state.testResults[this.state.activeCaseIndex].expectedOutput}</div>
+                          </div>
+                          {this.state.testResults[this.state.activeCaseIndex].status === "Error" || this.state.testResults[this.state.activeCaseIndex].status === "API Error" ? (
+                             <div className="io-block" style={{ border: '1px solid var(--error)', background: 'rgba(255, 85, 85, 0.1)' }}>
+                                <span className="io-label" style={{ color: 'var(--error)' }}>Error</span>
+                                <div className="io-value" style={{ color: 'var(--error)' }}>{this.state.testResults[this.state.activeCaseIndex].stderr}</div>
+                             </div>
+                          ) : (
+                             <div className="io-block">
+                                <span className="io-label">Your Output</span>
+                                <div className="io-value">{this.state.testResults[this.state.activeCaseIndex].actualOutput || " "}</div>
+                                {this.state.testResults[this.state.activeCaseIndex].stderr && (
+                                   <div style={{ color: '#ffb86c', fontSize: '12px', marginTop: '5px' }}>Warning: {this.state.testResults[this.state.activeCaseIndex].stderr}</div>
+                                )}
+                             </div>
+                          )}
+                       </div>
+                    )}
+                  </div>
+               )}
             </div>
           )}
         </div>
-      </div>
+      </Split>
     );
   }
 }

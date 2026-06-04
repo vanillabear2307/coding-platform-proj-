@@ -2,10 +2,42 @@
    Compiler — Dark editor and terminal output
    ============================================ */
 
-.compiler-container {
+.compiler-page-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.compiler-top-half {
+  display: flex !important;
+  flex-direction: row;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02); 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555; 
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777; 
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 /* Toolbar */
@@ -82,8 +114,7 @@
 
 /* Terminal Output Panel */
 .terminal-panel {
-  height: 35%;
-  min-height: 200px;
+  min-height: 150px;
   border-top: 1px solid var(--border);
   background: #0d0d14; /* Darker than editor for terminal feel */
   display: flex;
@@ -204,4 +235,120 @@
   .ide-wrapper {
     min-height: 300px;
   }
+}
+
+/* LeetCode-style Tabs and Pills */
+.terminal-tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  font-size: 13px;
+  font-family: var(--font-family);
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.terminal-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.terminal-tab-btn.active {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+.case-pills::-webkit-scrollbar {
+  height: 6px;
+}
+
+.case-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 6px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.case-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.case-pill.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.case-dot {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.case-dot.green {
+  color: var(--success);
+}
+
+.case-dot.red {
+  color: var(--error);
+}
+
+/* React Split Pane Gutters */
+.gutter {
+  background-color: var(--bg-surface);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  position: relative;
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+.gutter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.gutter:hover::after, .gutter:active::after {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.gutter.gutter-horizontal {
+  cursor: col-resize;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.gutter.gutter-vertical {
+  cursor: row-resize;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Ensure Split containers fill space properly */
+.compiler-page-wrapper {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.compiler-top-half {
+  display: flex !important;
+  flex-direction: row;
 }

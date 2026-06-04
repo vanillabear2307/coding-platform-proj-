@@ -89,21 +89,6 @@ export default class MainPage extends Component {
             {/* Filter Bar */}
             <div className="filter-bar">
               <div className="filter-group">
-                <span className="filter-label">Language</span>
-                <select
-                  value={this.state.language}
-                  onChange={this.language}
-                  id="filter-language"
-                  className="filter-select"
-                >
-                  <option value="all">All Languages</option>
-                  <option value="cpp">C++</option>
-                  <option value="c">C</option>
-                  <option value="java">Java</option>
-                  <option value="python">Python</option>
-                </select>
-              </div>
-              <div className="filter-group">
                 <span className="filter-label">Topic</span>
                 <select
                   value={this.state.tag}
