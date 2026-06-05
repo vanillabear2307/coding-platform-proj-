@@ -222,3 +222,210 @@
     max-height: 50vh;
   }
 }
+
+/* AI Assist Panel Styling */
+.ai-assist-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.ai-panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-panel-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--accent-primary);
+  border-radius: 2px;
+}
+
+.ai-hint-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: border-color var(--transition-fast);
+}
+
+.ai-hint-section:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ai-hint-prompt p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.ai-hint-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ai-hint-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-hint-body {
+  border-left: 2px solid var(--accent-primary);
+  padding-left: 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.btn-text {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  align-self: flex-start;
+  transition: color var(--transition-fast);
+}
+
+.btn-text:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.ai-error-box {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 85, 85, 0.08);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-sm);
+  color: var(--error);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Similar Problems list */
+.ai-similar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-section-subtitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ai-loading-similar {
+  color: var(--text-muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.ai-similar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-similar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.ai-similar-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.similar-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.similar-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: color var(--transition-fast);
+}
+
+.ai-similar-card:hover .similar-card-title {
+  color: var(--accent-primary);
+}
+
+.similar-card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.similar-card-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.similar-card-score {
+  font-weight: 500;
+  color: var(--success);
+}
+
+/* Difficulty Badges */
+.difficulty-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficulty-badge.easy {
+  background: rgba(0, 184, 148, 0.12);
+  color: #00b894;
+}
+
+.difficulty-badge.medium {
+  background: rgba(255, 159, 67, 0.12);
+  color: #ff9f43;
+}
+
+.difficulty-badge.hard {
+  background: rgba(255, 76, 76, 0.12);
+  color: #ff4c4c;
+}
+

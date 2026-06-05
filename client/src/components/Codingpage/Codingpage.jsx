@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import Instructions from "./Instructions/Instructions";
 import "./Codingpage.css";
 import Solution from "./Solution/Solution";
@@ -11,13 +13,26 @@ export default class Codingpage extends Component {
     this.state = {
       count: 0,
       question: undefined,
-      component: "instructions", // instructions | solutions
+      component: "instructions", // instructions | solutions | ai-assist
       mobilePanel: "left", // left | right (for mobile view toggle)
+      
     };
   }
   
   componentDidMount() {
     this.renderMyData();
+  }
+
+  componentDidUpdate(prevProps) {
+    // If user navigates to a similar question, reload state and fetch new data
+    if (prevProps.match.params.id !== this.props.match.params.id) {
+      this.setState({
+        question: undefined,
+        component: "instructions",
+      }, () => {
+        this.renderMyData();
+      });
+    }
   }
   
   handleInstructions = (e) => {
@@ -52,6 +67,7 @@ export default class Codingpage extends Component {
 
   render() {
     if (this.state.question && Array.isArray(this.state.question) && this.state.question.length > 0) {
+      let title = this.state.question[0].title;
       let instruction = this.state.question[0].instruction;
       let solution = this.state.question[0].solution;
       let testCases = this.state.question[0].testCases;
@@ -74,32 +90,32 @@ export default class Codingpage extends Component {
             </button>
           </div>
 
-          <Compiler testCases={testCases} mobilePanel={this.state.mobilePanel}>
+          <Compiler testCases={testCases} mobilePanel={this.state.mobilePanel} question={this.state.question[0]}>
             {/* Left Panel - Description / Solution */}
-          <div className={`coding-left-panel ${this.state.mobilePanel !== 'left' ? 'hidden' : ''}`}>
-            <div className="coding-tabs">
-              <button 
-                className={`coding-tab ${this.state.component === 'instructions' ? 'active' : ''}`}
-                onClick={this.handleInstructions}
-              >
-                <i className="fas fa-book-open"></i> Description
-              </button>
-              <button 
-                className={`coding-tab ${this.state.component === 'solutions' ? 'active' : ''}`}
-                onClick={this.handleSolutions}
-              >
-                <i className="fas fa-lightbulb"></i> Solution
-              </button>
+            <div className={`coding-left-panel ${this.state.mobilePanel !== 'left' ? 'hidden' : ''}`}>
+              <div className="coding-tabs">
+                <button 
+                  className={`coding-tab ${this.state.component === 'instructions' ? 'active' : ''}`}
+                  onClick={this.handleInstructions}
+                >
+                  <i className="fas fa-book-open"></i> Description
+                </button>
+                <button 
+                  className={`coding-tab ${this.state.component === 'solutions' ? 'active' : ''}`}
+                  onClick={this.handleSolutions}
+                >
+                  <i className="fas fa-lightbulb"></i> Solution
+                </button>
+              </div>
+              
+              <div className="coding-left-content">
+                {this.state.component === "instructions" ? (
+                  <Instructions instruction={instruction} />
+                ) : (
+                  <Solution solution={solution} />
+                )}
+              </div>
             </div>
-            
-            <div className="coding-left-content">
-              {this.state.component === "instructions" ? (
-                <Instructions instruction={instruction} />
-              ) : (
-                <Solution solution={solution} />
-              )}
-            </div>
-          </div>
 
           </Compiler>
         </div>

@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import Editor from "@monaco-editor/react";
 import "./Compiler.css";
-import { io } from "socket.io-client";
+
 import Split from "react-split";
+// Native WebSocket — connects to FastAPI executor on port 8000
 import ThemeContext from "../../../ThemeContext";
 
 const LANGUAGE_MAP = {
@@ -12,20 +13,50 @@ const LANGUAGE_MAP = {
   python3: "python",
 };
 
+const BOILERPLATE = {
+  cpp: `#include <iostream>
+using namespace std;
+
+int main() {
+    // Write C++ code here
+    
+    return 0;
+}`,
+  c: `#include <stdio.h>
+
+int main() {
+    // Write C code here
+    
+    return 0;
+}`,
+  java: `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        // Write Java code here
+        
+    }
+}`,
+  python3: `# Write Python 3 code here
+`
+};
+
 let checkErr;
 export default class Compiler extends Component {
   static contextType = ThemeContext;
 
   constructor(props) {
     super(props);
-    this.socket = io("http://localhost:5000");
+    const savedLang = localStorage.getItem("languageId") || "cpp";
     this.state = {
-      input: sessionStorage.getItem("sourceCode") || "",
+      input: sessionStorage.getItem("sourceCode") || BOILERPLATE[savedLang] || "",
       output: ``,
-      language_id: localStorage.getItem("languageId") || "cpp",
+      language_id: savedLang,
       user_input: ``,
       checkedBox: true,
       isRunning: false,
+      isSaved: false,
+      isGeneratingTests: false,
       activeCaseIndex: 0,
       testResults: null,
       overallStatus: null,
@@ -39,13 +70,57 @@ export default class Compiler extends Component {
 
   language = (event) => {
     event.preventDefault();
-    this.setState({ language_id: event.target.value });
-    localStorage.setItem("languageId", event.target.value);
+    const newLang = event.target.value;
+    this.setState({ 
+      language_id: newLang,
+      input: BOILERPLATE[newLang] || ""
+    });
+    localStorage.setItem("languageId", newLang);
   };
   
   handleEditorChange = (value) => {
+    // WebSocket is created fresh per execution (see executeWithWebSocket)
     this.setState({ input: value || "" });
-    sessionStorage.setItem("sourceCode", value || "");
+  };
+
+  saveProgress = (e) => {
+    if (e) e.preventDefault();
+    sessionStorage.setItem("sourceCode", this.state.input);
+    this.setState({ isSaved: true });
+    setTimeout(() => this.setState({ isSaved: false }), 2000);
+  };
+
+  generateAITestCases = async (e) => {
+    if (e) e.preventDefault();
+    if (!this.props.question) return;
+
+    this.setState({ isGeneratingTests: true });
+    try {
+      const res = await fetch("/ai/testcases", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: this.props.question.title,
+          description: this.props.question.instruction
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const currentInput = this.state.user_input;
+        const newInput = currentInput ? currentInput + "\n" + data.testcases : data.testcases;
+        this.setState({ user_input: newInput });
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        alert("Failed to generate AI test cases: " + (errorData.detail || res.statusText));
+      }
+    } catch (err) {
+      alert("Network error generating test cases.");
+    } finally {
+      this.setState({ isGeneratingTests: false });
+    }
   };
   
   handleCheckbox = () => {
@@ -53,34 +128,75 @@ export default class Compiler extends Component {
   };
 
   componentWillUnmount() {
-    if (this.socket) this.socket.disconnect();
+    // Close any in-flight WebSocket if the component unmounts mid-execution
+    if (this._ws && this._ws.readyState === WebSocket.OPEN) {
+      this._ws.close();
+    }
   }
 
-  executeWithSocket = (language, code, stdin) => {
+  executeWithWebSocket = (language, code, stdin) => {
     return new Promise((resolve) => {
-      let fullOutput = "";
-      this.socket.off('output');
-      this.socket.off('done');
-      
-      this.socket.on('output', (data) => {
-        fullOutput += data;
-        let outputText = document.getElementById("terminal-output");
-        if (outputText && !this.state.checkedBox) {
-          outputText.innerHTML += data.replace(/\n/g, '<br/>');
+      // In dev connect directly to FastAPI; in production use same host
+      const proto  = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl  = import.meta.env.PROD
+        ? `${proto}//${window.location.host}/ws/execute`
+        : 'ws://localhost:8000/ws/execute';
+
+      const ws = new WebSocket(wsUrl);
+      this._ws = ws;  // keep ref for componentWillUnmount cleanup
+      let fullOutput = '';
+      let result     = null;
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ language, code, stdin: stdin || '' }));
+      };
+
+      ws.onmessage = (event) => {
+        // FastAPI sends JSON objects for control messages
+        try {
+          const msg = JSON.parse(event.data);
+
+          if (msg.type === 'output') {
+            // Real-time output chunk
+            fullOutput += msg.data;
+            const outputEl = document.getElementById('terminal-output');
+            if (outputEl && !this.state.checkedBox) {
+              outputEl.innerHTML += msg.data.replace(/\n/g, '<br/>');
+            }
+            return;
+          }
+
+          if (msg.type === 'done') {
+            result = msg.result;  // { status: 'success'|'error', message?: '...' }
+            ws.close();
+            return;
+          }
+        } catch (_) {
+          // Plain-text fallback (shouldn't happen with FastAPI service)
+          fullOutput += event.data;
         }
-      });
-      
-      this.socket.on('done', (result) => {
+      };
+
+      ws.onclose = () => {
+        const isError  = result?.status === 'error';
         resolve({
-          exit_code: result.status === 'success' ? 0 : 1,
-          stdout: fullOutput,
-          stderr: result.status === 'error' ? result.message : null,
-          execution_time_ms: 'N/A',
-          memory_used_kb: 'N/A'
+          exit_code:          isError ? 1 : 0,
+          stdout:             isError ? '' : fullOutput,
+          stderr:             isError ? (result?.message || fullOutput) : null,
+          execution_time_ms:  'N/A',
+          memory_used_kb:     'N/A',
         });
-      });
-      
-      this.socket.emit('execute', { language, code, stdin });
+      };
+
+      ws.onerror = () => {
+        resolve({
+          exit_code: 1,
+          stdout:    '',
+          stderr:    'WebSocket connection failed — is the FastAPI server running? (uvicorn main:app --port 8000)',
+          execution_time_ms: 'N/A',
+          memory_used_kb:     'N/A',
+        });
+      };
     });
   };
   
@@ -97,7 +213,7 @@ export default class Compiler extends Component {
       this.setState({ testResults: [], overallStatus: null, overallPassed: 0, activeCaseIndex: 0 });
 
       for (let i = 0; i < testCases.length; i++) {
-        const jsonGetSolution = await this.executeWithSocket(
+        const jsonGetSolution = await this.executeWithWebSocket(
           this.state.language_id,
           this.state.input || "",
           testCases[i].input || ""
@@ -153,7 +269,7 @@ export default class Compiler extends Component {
       let outputText = document.getElementById("terminal-output");
       outputText.innerHTML = "Running custom input...<br />";
       
-      const jsonGetSolution = await this.executeWithSocket(
+      const jsonGetSolution = await this.executeWithWebSocket(
         this.state.language_id,
         this.state.input || "",
         this.state.user_input || ""
@@ -214,6 +330,17 @@ export default class Compiler extends Component {
           <div className="compiler-actions">
             <button
               className="btn-accent"
+              onClick={this.saveProgress}
+              style={{ backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+            >
+              {this.state.isSaved ? (
+                <><i className="fas fa-check" style={{ color: 'var(--success)' }}></i> Saved</>
+              ) : (
+                <><i className="fas fa-save"></i> Save Code</>
+              )}
+            </button>
+            <button
+              className="btn-accent"
               onClick={this.submit}
               disabled={this.state.isRunning}
               style={this.state.isRunning ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
@@ -268,6 +395,16 @@ export default class Compiler extends Component {
           
           {!this.state.checkedBox && (
             <div className="custom-input-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px', borderBottom: '1px solid var(--border)' }}>
+                <button 
+                  className="btn-accent" 
+                  onClick={this.generateAITestCases} 
+                  disabled={this.state.isGeneratingTests}
+                  style={{ padding: '6px 12px', fontSize: '12px', backgroundColor: 'transparent', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
+                >
+                  {this.state.isGeneratingTests ? <><i className="fas fa-spinner fa-spin"></i> Generating...</> : <><i className="fas fa-robot"></i> Generate AI Test Cases</>}
+                </button>
+              </div>
               <textarea 
                 className="custom-textarea"
                 placeholder="Enter custom stdin here..."

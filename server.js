@@ -15,9 +15,7 @@ const User = require("./server/model/user-model");
 const keys = require("./server/config/keys");
 const cookieParser = require("cookie-parser"); // parse cookie header
 const app = express();
-const http = require('http');
-const { Server } = require('socket.io');
-const { executeCode } = require('./server/executor/executor');
+
 // Middleware
 app.use(bodyParser.json());
 mongoose.connect(process.env.DB_MONGO_URI, {
@@ -109,24 +107,6 @@ app.get("/", authCheck, (req, res) => {
   });
 });
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: process.env.REACT_APP_WEBSITE_URL || "http://localhost:3000", credentials: true }
-});
-
-io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
-
-  socket.on('execute', (data) => {
-    const { language, code, stdin } = data;
-
-    executeCode(language, code, stdin,
-      (output) => socket.emit('output', output),
-      (result) => socket.emit('done', result)
-    );
-  });
-});
-
-server.listen(PORT, () => {
-  console.log(`Server Started at PORT ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Express server started at PORT ${PORT}`);
 });
