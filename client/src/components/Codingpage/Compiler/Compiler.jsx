@@ -136,11 +136,10 @@ export default class Compiler extends Component {
 
   executeWithWebSocket = (language, code, stdin) => {
     return new Promise((resolve) => {
-      // In dev connect directly to FastAPI; in production use same host
-      const proto  = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl  = import.meta.env.PROD
-        ? `${proto}//${window.location.host}/ws/execute`
-        : 'ws://localhost:8000/ws/execute';
+      // Always use relative WebSocket URL so the Vite proxy (dev) or
+      // the reverse proxy (prod) forwards to FastAPI correctly.
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${proto}//${window.location.host}/ws/execute`;
 
       const ws = new WebSocket(wsUrl);
       this._ws = ws;  // keep ref for componentWillUnmount cleanup
