@@ -5,6 +5,7 @@ import "./Compiler.css";
 import Split from "react-split";
 // Native WebSocket — connects to FastAPI executor on port 8000
 import ThemeContext from "../../../ThemeContext";
+import API_BASE from "../../../config";
 
 const LANGUAGE_MAP = {
   cpp: "cpp",
@@ -96,7 +97,7 @@ export default class Compiler extends Component {
 
     this.setState({ isGeneratingTests: true });
     try {
-      const res = await fetch("/ai/testcases", {
+      const res = await fetch(`${API_BASE}/ai/testcases`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -136,10 +137,16 @@ export default class Compiler extends Component {
 
   executeWithWebSocket = (language, code, stdin) => {
     return new Promise((resolve) => {
-      // Always use relative WebSocket URL so the Vite proxy (dev) or
-      // the reverse proxy (prod) forwards to FastAPI correctly.
-      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${proto}//${window.location.host}/ws/execute`;
+      // Use backend URL for WebSocket. In production, VITE_API_URL points
+      // to the Cloudflare Tunnel domain. In dev, Vite proxy handles it.
+      let wsUrl;
+      if (import.meta.env.VITE_API_URL) {
+        const apiUrl = new URL(import.meta.env.VITE_API_URL);
+        wsUrl = `wss://${apiUrl.host}/ws/execute`;
+      } else {
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${proto}//${window.location.host}/ws/execute`;
+      }
 
       const ws = new WebSocket(wsUrl);
       this._ws = ws;  // keep ref for componentWillUnmount cleanup

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import "./QuestionPage.css";
 import ReactMarkdown from "react-markdown";
+import API_BASE from "../../config";
 
 export default class MainPage extends Component {
   constructor(props) {
@@ -40,7 +41,8 @@ export default class MainPage extends Component {
     try {
       
       const response = await fetch(
-        `/question/:?language=${this.state.language}&tag=${this.state.tag}&medium=${this.state.medium}`
+        `${API_BASE}/question/:?language=${this.state.language}&tag=${this.state.tag}&medium=${this.state.medium}`,
+        { credentials: 'include' }
       );
   
       let jsonResponse = await response.json();
@@ -136,8 +138,8 @@ export default class MainPage extends Component {
                       className="problem-row"
                       onClick={() => {
                         if (!this.props.authenticated) {
-                          window.location.href = import.meta.env.PROD 
-                            ? "/auth/google" 
+                          window.location.href = API_BASE
+                            ? `${API_BASE}/auth/google`
                             : "http://localhost:5000/auth/google";
                           return;
                         }

@@ -9,7 +9,10 @@ passport.use(
       // options for the Google start
       clientID: keys.GOOGLE_ACCESS_TOKEN,
       clientSecret: keys.GOOGLE_TOKEN_SECRET,
-      callbackURL: "/auth/google/redirect",
+      callbackURL: process.env.NODE_ENV === 'production'
+        ? process.env.GOOGLE_CALLBACK_URL || "/auth/google/redirect"
+        : "/auth/google/redirect",
+      proxy: true,
     },
 
     async (token, tokenSecret, profile, done) => {

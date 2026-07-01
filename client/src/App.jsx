@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import API_BASE from "./config";
 import Routes from "./routes/routes";
 import Navbar from "./components/Navbar/Navbar";
 import { ThemeProvider } from "./ThemeContext";
@@ -15,7 +16,7 @@ class App extends Component {
   componentDidMount = async () => {
     try {
       const response = await fetch(
-        '/auth/login/success', 
+        `${API_BASE}/auth/login/success`, 
         {
           method: "GET",
           credentials: "include",

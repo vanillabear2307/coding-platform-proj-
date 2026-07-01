@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import API_BASE from "../../config";
 
 export default class Form extends Component {
   constructor(props) {
@@ -19,8 +20,8 @@ export default class Form extends Component {
   
   componentDidMount() {
     if (!this.props.authenticated) {
-      window.location.href = import.meta.env.PROD 
-        ? "/auth/google" 
+      window.location.href = API_BASE
+        ? `${API_BASE}/auth/google`
         : "http://localhost:5000/auth/google";
     }
   }
@@ -55,8 +56,9 @@ export default class Form extends Component {
     this.setState({ status: 'saving' });
 
     try {
-      const response = await fetch('/question/add', {
+      const response = await fetch(`${API_BASE}/question/add`, {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",

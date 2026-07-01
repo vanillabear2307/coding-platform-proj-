@@ -6,6 +6,7 @@ import "./Codingpage.css";
 import Solution from "./Solution/Solution";
 import Compiler from "./Compiler/Compiler";
 import { Redirect } from "react-router";
+import API_BASE from "../../config";
 
 export default class Codingpage extends Component {
   constructor(props) {
@@ -54,7 +55,8 @@ export default class Codingpage extends Component {
  
     try {
       const response = await fetch(
-        `/question/id/:?id=${match.params.id}`
+        `${API_BASE}/question/id/:?id=${match.params.id}`,
+        { credentials: 'include' }
       );
 
       let jsonResponse = await response.json();

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { FaBars, FaTimes, FaSun, FaMoon } from "react-icons/fa";
 import "./Navbar.css";
+import API_BASE from "../../config";
 import {
   GoogleLoginButton,
 } from "react-social-login-buttons";
@@ -49,13 +50,13 @@ export default class Navbar extends Component {
   _handleSignInClick = () => {
     // Authenticate using via passport api in the backend
     // Open Google login page
-    window.location.href = import.meta.env.PROD ? `/auth/google` : "http://localhost:5000/auth/google";
+    window.location.href = API_BASE ? `${API_BASE}/auth/google` : "http://localhost:5000/auth/google";
   };
 
   _handleLogoutClick = () => {
     // Logout using Google passport api
     // Set authenticated state to false in the HomePage component
-    window.location.href = import.meta.env.PROD ? `/auth/logout` : "http://localhost:5000/auth/logout";
+    window.location.href = API_BASE ? `${API_BASE}/auth/logout` : "http://localhost:5000/auth/logout";
     this.props.handleNotAuthenticated();
   };
   render() {

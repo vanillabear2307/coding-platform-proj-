@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router";
 import "./profile.css";
+import API_BASE from "../../config";
 
 export default class App extends Component {
   constructor(props) {
@@ -17,7 +18,9 @@ export default class App extends Component {
   renderMyData = async () => {
     const { match } = this.props;
     try {
-      const response = await fetch(`/profile/:?id=${this.props.match.params.id}`);
+      const response = await fetch(`${API_BASE}/profile/:?id=${this.props.match.params.id}`, {
+        credentials: 'include'
+      });
 
       let jsonResponse = await response.json();
     

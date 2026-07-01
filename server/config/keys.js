@@ -10,7 +10,7 @@ const MONGODB = {
 };
 
 const SESSION = {
-  COOKIE_KEY: "thisappisawesome",
+  COOKIE_KEY: process.env.COOKIE_KEY || "thisappisawesome",
 };
 
 const KEYS = {

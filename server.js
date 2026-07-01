@@ -16,6 +16,9 @@ const keys = require("./server/config/keys");
 const cookieParser = require("cookie-parser"); // parse cookie header
 const app = express();
 
+// Trust proxies (Cloudflare Tunnel) so secure cookies work
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(bodyParser.json());
 mongoose.connect(process.env.DB_MONGO_URI, {
@@ -33,7 +36,9 @@ app.use(
   cookieSession({
     name: "session",
     keys: [keys.COOKIE_KEY],
-    maxAge: 24 * 60 * 60 * 100,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
   })
 );
 
