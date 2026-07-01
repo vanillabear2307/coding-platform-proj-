@@ -1,111 +1,144 @@
+# CodeArena - Competitive Programming Portal
 
-Competitive Programming Portal
+**A full-stack, real-time web portal that functions as a complete Integrated Development Environment (IDE) with a primary focus on competitive coding.**
 
-**A web portal which functions as an IDE (integrated development environment) with a primary focus on competitive coding.** 
+This project is a highly complex, multi-service application featuring a modern React frontend, an Express.js backend for authentication and data management, and a dedicated Python FastAPI microservice for secure code execution and AI integrations.
 
-It is a **MERN** Stack Web Application and is currently maintained on GitHub.
+---
 
------
+## 🚀 Key Features
 
-## Tools and Technology
+*   **Professional IDE Experience**: Built with **Monaco Editor** (the same engine behind VS Code) featuring syntax highlighting, auto-completion, and a resizable split-pane layout.
+*   **Secure Code Execution**: A custom-built execution engine that spins up isolated **Docker containers** on the fly to compile and run user code securely in C, C++, Java, and Python.
+*   **Real-time Streaming**: Code execution results and logs stream back to the client instantly via **WebSockets**, providing immediate feedback without HTTP polling.
+*   **AI Test Case Generation**: Integrated with **Google Gemini 2.0 AI** to automatically read problem descriptions and generate tricky, edge-case test inputs on demand.
+*   **Secure Authentication**: **Google OAuth 2.0** integration via Passport.js for seamless and secure user logins.
+*   **Dark/Light Mode**: Full theme support with context-based state management for comfortable coding at night.
+*   **Comprehensive Problem Set**: Users can browse, filter (by tags, difficulty, language), and solve algorithmic challenges, or add new problems to the database directly from the UI.
 
+---
 
-<img align="left" alt="HTML5" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/html/html.png" />
-<img align="left" alt="CSS3" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/css/css.png" />
-<img align="left" alt="JavaScript" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/javascript/javascript.png" />
+## 🛠️ Technology Stack
+
+### Frontend (Client)
 <img align="left" alt="React" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/react/react.png" />
+<img align="left" alt="JavaScript" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/javascript/javascript.png" />
+<img align="left" alt="CSS3" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/css/css.png" />
+<br><br>
+*   **React 18** (Vite build system)
+*   **Monaco Editor** (`@monaco-editor/react`)
+*   **React Router** for client-side routing
+*   **React Split** for resizable layout panes
+
+### Backend 1: Core API (Express)
 <img align="left" alt="Node.js" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/nodejs/nodejs.png" />
 <img align="left" alt="MongoDB" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/mongodb/mongodb.png" />
-<img align="left" alt="Git" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/git/git.png" />
-<img align="left" alt="GitHub" width="26px" src="https://raw.githubusercontent.com/github/explore/78df643247d429f6cc873026c0622819ad797942/topics/github/github.png" />
-<img align="left" alt="Terminal" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/terminal/terminal.png" />
+<br><br>
+*   **Node.js / Express.js**
+*   **MongoDB Atlas** (Mongoose ODM)
+*   **Passport.js** (Google OAuth 2.0 Strategy)
+*   **Cookie-Session** for cross-origin authentication
 
+### Backend 2: Execution Engine (FastAPI)
+<img align="left" alt="Python" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/python/python.png" />
+<img align="left" alt="Docker" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/docker/docker.png" />
+<br><br>
+*   **Python 3 / FastAPI**
+*   **Docker SDK for Python** (`docker-py`)
+*   **WebSockets** for log streaming
+*   **Google Generative AI SDK** (Gemini)
 
-<br>
-</br>
+---
 
-* Editor - [CodeMirror](https://codemirror.net/)
-* Compiler - [Judge0](https://www.judge0.com/)
-* HTML - standard markup language for creating web pages
-* CSS - style sheet language
-* JavaScript - programming language that gives web pages interactive elements
-* [MongoDB](https://www.mongodb.com/) - cross-platform document-oriented database program
-* [Express](https://expressjs.com/) - back end web application framework for Node.js
-* [React](https://reactjs.org/) - JS library for building UI components
-* [Node.js](https://nodejs.org/en/) - evented I/O for the backend
+## 💻 Local Development Setup
 
+To run this project locally, you must have **Node.js**, **Python 3**, and **Docker Desktop** (running) installed on your machine.
 
------
-
-## How To Run
-
-### Prerequisites
-You must have basic knowledge of a version control system like Git & Github. 
-
-### Steps for installation
+### 1. Build the Docker Sandbox Image
+The execution engine relies on a custom Docker image to run user code. 
+Create a file named `Dockerfile` anywhere with this content:
+```dockerfile
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y gcc g++ default-jdk python3 && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -d /home/sandbox -s /bin/bash sandbox
+WORKDIR /home/sandbox/code
+USER sandbox
 ```
-# Install dependencies for server
+Build it via terminal:
+```bash
+docker build -t code-sandbox .
+```
+
+### 2. Environment Variables
+You will need two `.env` files.
+
+**Root Directory (`/.env`)**:
+```env
+DB_MONGO_URI=<your-mongodb-atlas-uri>
+GOOGLE_CLIENT_ID=<your-google-oauth-client-id>
+GOOGLE_CLIENT_SECRET=<your-google-oauth-client-secret>
+COOKIE_KEY=any_random_string
+PORT=5000
+NODE_ENV=development
+```
+
+**FastAPI Directory (`/fastapi-service/.env`)**:
+```env
+GEMINI_API_KEY=<your-gemini-api-key>
+CORS_ORIGIN=http://localhost:3000
+```
+
+### 3. Install Dependencies
+```bash
+# Install Express backend dependencies
 npm install
 
-# Install dependencies for client
-npm run client-install
+# Install React frontend dependencies
+cd client
+npm install
+cd ..
 
-# Run the client & server with concurrently
-npm run dev
-
-# Run the Express server only
-npm run server
-
-# Run the React client only
-npm run client
-
-# Server runs on http://localhost:5000 and client on http://localhost:3000
-
+# Install FastAPI dependencies
+cd fastapi-service
+python -m venv venv
+# Activate venv: `source venv/bin/activate` (Mac/Linux) or `.\venv\Scripts\activate` (Windows)
+pip install -r requirements.txt
 ```
 
+### 4. Run the Application
+You need two terminals to run the full stack:
 
------
+**Terminal 1 (FastAPI Executor)**:
+```bash
+cd fastapi-service
+# (Ensure venv is activated)
+uvicorn main:app --host 127.0.0.1 --port 8000
+```
 
-## Key Features
-<img src="https://img.shields.io/badge/BUILT%20FOR-CODERS%20%3C%2F%3E-red"/> <img src="https://img.shields.io/badge/Heroku-deployed-blueviolet?logo=Heroku&style=flat"/> <img src="https://img.shields.io/badge/Google-OAuth%202.0-blue"/> <img src="https://img.shields.io/badge/JavaScript-79.8%25-yellowgreen?logo=JavaScript" />
+**Terminal 2 (Express + React)**:
+```bash
+npm run dev
+```
+The React frontend will automatically open at `http://localhost:3000`.
 
-- OAuth is used to get information from Google accounts, that enables users to sign in with their respective credentials:
-- You can submit your code in C, C++, Java or Python. 👨‍💻
-- You can add questions & testcases directly from the website into the database. :grey_question:
-- You can get questions using different filters of your choice(viz. languages, topic, difficulty level) :abcd:
-- You can check your code against test cases (default or custom) :heavy_check_mark:
-- After compilation of your code, you can view the execution time and memory usage. :clock6:
-- The editor supports 5 different colours themes. :vertical_traffic_light:
-- User profile page
+---
 
-## Deployment
-There is a Heroku post build script so that you do not have to compile your React frontend manually, it is done on the server. Simply push to Heroku and it will build and load the client index.html page
+## 🌐 Deployment Architecture
 
+This project is built to support a distributed, cross-origin architecture:
+*   **Frontend**: Deployed as a static SPA on **Vercel**.
+*   **Backends**: Hosted on a persistent server (e.g., Oracle Cloud Free Tier or a local machine via Cloudflare Tunnels) capable of running the Docker daemon.
+*   **Routing**: The React application dynamically routes API requests and WebSocket connections to the backend domain via the `VITE_API_URL` environment variable.
 
+---
 
+## 📸 Screenshots
 
+| Feature | Preview |
+|---|---|
+| **IDE & Compiler** | ![Compiler](https://i.imgur.com/PW7TAt0.png) |
+| **Problem List** | ![Questions](https://i.imgur.com/FzNixhA.png) |
+| **Instructions Tab** | ![Instructions](https://i.imgur.com/nT7ETvh.png) |
 
-## Screenshots
-
-
-Questions Page               
-:-------------------------:
-![](https://i.imgur.com/FzNixhA.png)
-
------
-
- Instructions,code & solution page
-:-------------------------:
- ![](https://i.imgur.com/nT7ETvh.png)
- 
- -----
- 
-Editor,Compiler & Default Tests            
-:-------------------------:
-![](https://i.imgur.com/PW7TAt0.png)
-
------
-
-
-
-
+*(Note: Screenshots may reflect earlier UI iterations prior to the Monaco Editor migration).*
