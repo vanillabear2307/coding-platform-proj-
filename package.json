@@ -1,5 +1,5 @@
 {
-  "name": "dsc-codingportal",
+  "name": "coding-platform",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -15,14 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akashgp09/DSC-CodingPortal.git"
+    "url": "git+https://github.com/vanillabear2307/coding-platform-proj-.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/akashgp09/DSC-CodingPortal/issues"
+    "url": "https://github.com/vanillabear2307/coding-platform-proj-/issues"
   },
-  "homepage": "https://github.com/akashgp09/DSC-CodingPortal#readme",
+  "homepage": "https://github.com/vanillabear2307/coding-platform-proj-#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "body-parser": "^1.19.0",

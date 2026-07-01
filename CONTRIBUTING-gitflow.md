@@ -14,7 +14,7 @@ While this isn't a necessary step, if you plan on doing anything more than a tin
 ## Add 'upstream' repo to list of remotes
 
 ```
-git remote add upstream https://github.com/RonitNayak25/DSC-CodingPortal.git
+git remote add upstream https://github.com/vanillabear2307/coding-platform-proj-.git
 ```
 
 ## Verify the new remote named 'upstream'
@@ -62,13 +62,13 @@ For enhancements use `feature/your_username/issue#` or `feature/your_username/na
 For bugs use `bug/your_username/issue#` or `bug/your_username/name_of_bug`
 
 ```
-git branch feature/akashgp09/navbar
+git branch feature/yourname/navbar
 ```
 
 ## Switch to your new branch
 
 ```
-git checkout feature/akashgp09/navbar
+git checkout feature/yourname/navbar
 ```
 
 Now, go to town hacking away and making whatever changes you want to.
@@ -90,7 +90,7 @@ git merge upstream/master
 ## If there were any new commits, rebase your development branch
 
 ```
-git checkout feature/akashgp09/navbar
+git checkout feature/yourname/navbar
 git rebase master
 ```
 
