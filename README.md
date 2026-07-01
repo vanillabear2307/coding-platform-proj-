@@ -109,13 +109,3 @@ This project is built to support a distributed, cross-origin architecture:
 *   **Routing**: The React application dynamically routes API requests and WebSocket connections to the backend domain via the `VITE_API_URL` environment variable.
 
 ---
-
-## 📸 Screenshots
-
-| Feature | Preview |
-|---|---|
-| **IDE & Compiler** | ![Compiler](https://i.imgur.com/PW7TAt0.png) |
-| **Problem List** | ![Questions](https://i.imgur.com/FzNixhA.png) |
-| **Instructions Tab** | ![Instructions](https://i.imgur.com/nT7ETvh.png) |
-
-*(Note: Screenshots may reflect earlier UI iterations prior to the Monaco Editor migration).*
