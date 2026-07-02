@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { FaBars, FaTimes, FaSun, FaMoon } from "react-icons/fa";
 import "./Navbar.css";
 import API_BASE from "../../config";
@@ -80,7 +80,7 @@ export default class Navbar extends Component {
               className="navbar-logo"
               onClick={this.closeMobileMenu}
             >
-              <span className="brand-text">⚡ CodeArena</span>
+              <span className="brand-text">⚡ Code Prep</span>
             </Link>
 
             <div className="menu-icon" onClick={this.handleClick}>
@@ -94,22 +94,25 @@ export default class Navbar extends Component {
 
             <ul className={this.state.click ? "nav-menu active" : "nav-menu"}>
               <li className="nav-item">
-                <Link
+                <NavLink
+                  exact
                   to="/"
                   className="nav-links"
+                  activeClassName="active"
                   onClick={this.closeMobileMenu}
                 >
                   Home
-                </Link>
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link
+                <NavLink
                   to="/compete"
                   className="nav-links"
+                  activeClassName="active"
                   onClick={this.closeMobileMenu}
                 >
                   Problems
-                </Link>
+                </NavLink>
               </li>
 
               {/* Mobile-only theme toggle */}
@@ -213,7 +216,7 @@ export default class Navbar extends Component {
               <button className="login-modal-close" onClick={this.handleClose}>
                 <FaTimes />
               </button>
-              <h3>Welcome to CodeArena</h3>
+              <h3>Welcome to Code Prep</h3>
               <p className="login-subtitle">Sign in to track progress and compete</p>
               <GoogleLoginButton
                 onClick={this._handleSignInClick}

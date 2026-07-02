@@ -6,6 +6,7 @@ import Split from "react-split";
 // Native WebSocket — connects to FastAPI executor on port 8000
 import ThemeContext from "../../../ThemeContext";
 import API_BASE from "../../../config";
+import { toast } from "../../Toast/Toast";
 
 const LANGUAGE_MAP = {
   cpp: "cpp",
@@ -49,6 +50,7 @@ export default class Compiler extends Component {
   constructor(props) {
     super(props);
     const savedLang = localStorage.getItem("languageId") || "cpp";
+    const savedFontSize = parseInt(localStorage.getItem("editorFontSize") || "14", 10);
     this.state = {
       input: sessionStorage.getItem("sourceCode") || BOILERPLATE[savedLang] || "",
       output: ``,
@@ -61,9 +63,40 @@ export default class Compiler extends Component {
       activeCaseIndex: 0,
       testResults: null,
       overallStatus: null,
-      overallPassed: 0
+      overallPassed: 0,
+      fontSize: savedFontSize
     };
   }
+
+  resetCode = (e) => {
+    if (e) e.preventDefault();
+    const confirmed = window.confirm("Are you sure you want to reset the editor to the boilerplate template? This will overwrite your current code.");
+    if (confirmed) {
+      this.setState({
+        input: BOILERPLATE[this.state.language_id] || ""
+      });
+      sessionStorage.removeItem("sourceCode");
+      toast.info("Editor reset to boilerplate template");
+    }
+  };
+
+  copyCode = (e) => {
+    if (e) e.preventDefault();
+    navigator.clipboard.writeText(this.state.input)
+      .then(() => {
+        toast.success("Code copied to clipboard!");
+      })
+      .catch(() => {
+        toast.error("Failed to copy code.");
+      });
+  };
+
+  handleFontSizeChange = (event) => {
+    const size = parseInt(event.target.value, 10);
+    this.setState({ fontSize: size });
+    localStorage.setItem("editorFontSize", size);
+    toast.info(`Font size set to ${size}px`);
+  };
 
   userInput = (event) => {
     this.setState({ user_input: event.target.value });
@@ -113,12 +146,13 @@ export default class Compiler extends Component {
         const currentInput = this.state.user_input;
         const newInput = currentInput ? currentInput + "\n" + data.testcases : data.testcases;
         this.setState({ user_input: newInput });
+        toast.success("AI Test Cases generated!");
       } else {
         const errorData = await res.json().catch(() => ({}));
-        alert("Failed to generate AI test cases: " + (errorData.detail || res.statusText));
+        toast.error("Failed to generate AI test cases: " + (errorData.detail || res.statusText));
       }
     } catch (err) {
-      alert("Network error generating test cases.");
+      toast.error("Network error generating test cases.");
     } finally {
       this.setState({ isGeneratingTests: false });
     }
@@ -271,6 +305,51 @@ export default class Compiler extends Component {
          overallStatus: finalStatus,
          overallPassed: testPassed
       });
+
+      // Save submission record
+      try {
+        await fetch(`${API_BASE}/user/submission`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            questionId: this.props.question._id,
+            language: this.state.language_id,
+            code: this.state.input,
+            status: finalStatus,
+            passedCases: testPassed,
+            totalCases: testCases.length
+          })
+        });
+      } catch (err) {
+        console.error("Error saving submission:", err);
+      }
+
+      // If Accepted, mark solved
+      if (finalStatus === "Accepted") {
+        toast.success("Congratulations! All test cases passed.");
+        try {
+          const solvedRes = await fetch(`${API_BASE}/user/solved/${this.props.question._id}`, {
+            method: "POST",
+            credentials: "include"
+          });
+          if (solvedRes.ok) {
+            let localSolved = JSON.parse(localStorage.getItem("solved_problems") || "[]");
+            if (!localSolved.includes(this.props.question._id)) {
+              localSolved.push(this.props.question._id);
+              localStorage.setItem("solved_problems", JSON.stringify(localSolved));
+            }
+          }
+        } catch (err) {
+          console.error("Error updating solved status:", err);
+        }
+      } else if (finalStatus === "Wrong Answer") {
+        toast.error(`Wrong Answer: Only ${testPassed}/${testCases.length} test cases passed.`);
+      } else {
+        toast.error("Compilation / runtime error occurred.");
+      }
     } else {
       let outputText = document.getElementById("terminal-output");
       outputText.innerHTML = "Running custom input...<br />";
@@ -320,68 +399,96 @@ export default class Compiler extends Component {
           <div className={`coding-right-panel ${this.props.mobilePanel && this.props.mobilePanel !== 'right' ? 'hidden' : ''}`}>
             {/* Editor Toolbar */}
             <div className="compiler-toolbar">
-          <div className="compiler-controls">
-            <select
-              value={this.state.language_id}
-              onChange={this.language}
-              className="editor-select"
-            >
-              <option value="cpp">C++</option>
-              <option value="c">C</option>
-              <option value="java">Java</option>
-              <option value="python3">Python</option>
-            </select>
-          </div>
-          
-          <div className="compiler-actions">
-            <button
-              className="btn-accent"
-              onClick={this.saveProgress}
-              style={{ backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
-            >
-              {this.state.isSaved ? (
-                <><i className="fas fa-check" style={{ color: 'var(--success)' }}></i> Saved</>
-              ) : (
-                <><i className="fas fa-save"></i> Save Code</>
-              )}
-            </button>
-            <button
-              className="btn-accent"
-              onClick={this.submit}
-              disabled={this.state.isRunning}
-              style={this.state.isRunning ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
-            >
-              {this.state.isRunning ? (
-                <><i className="fas fa-circle-notch fa-spin"></i> Running...</>
-              ) : (
-                <><i className="fas fa-play"></i> Run Code</>
-              )}
-            </button>
-          </div>
-        </div>
+              <div className="compiler-controls" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <select
+                  value={this.state.language_id}
+                  onChange={this.language}
+                  className="editor-select"
+                >
+                  <option value="cpp">C++</option>
+                  <option value="c">C</option>
+                  <option value="java">Java</option>
+                  <option value="python3">Python</option>
+                </select>
 
-        {/* Monaco Code Editor */}
-        <div className="ide-wrapper">
-          <Editor
-            value={this.state.input}
-            language={LANGUAGE_MAP[this.state.language_id] || "cpp"}
-            theme={monacoTheme}
-            onChange={this.handleEditorChange}
-            options={{
-              fontSize: 14,
-              fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-              tabSize: 4,
-              wordWrap: "on",
-              lineNumbers: "on",
-              renderLineHighlight: "line",
-              matchBrackets: "always",
-              suggestOnTriggerCharacters: true,
-              padding: { top: 12 },
-            }}
-          />
+                <select
+                  value={this.state.fontSize}
+                  onChange={this.handleFontSizeChange}
+                  className="editor-select"
+                  style={{ width: '80px' }}
+                >
+                  <option value="12">12px</option>
+                  <option value="14">14px</option>
+                  <option value="16">16px</option>
+                  <option value="18">18px</option>
+                </select>
+              </div>
+              
+              <div className="compiler-actions" style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn-ghost"
+                  onClick={this.copyCode}
+                  title="Copy Code to Clipboard"
+                  style={{ padding: '8px 12px', fontSize: '13px' }}
+                >
+                  <i className="fas fa-copy"></i>
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={this.resetCode}
+                  title="Reset boilerplate"
+                  style={{ padding: '8px 12px', fontSize: '13px' }}
+                >
+                  <i className="fas fa-undo"></i> Reset
+                </button>
+                <button
+                  className="btn-accent"
+                  onClick={this.saveProgress}
+                  style={{ backgroundColor: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+                >
+                  {this.state.isSaved ? (
+                    <><i className="fas fa-check" style={{ color: 'var(--success)' }}></i> Saved</>
+                  ) : (
+                    <><i className="fas fa-save"></i> Save</>
+                  )}
+                </button>
+                <button
+                  className="btn-accent"
+                  onClick={this.submit}
+                  disabled={this.state.isRunning}
+                  style={this.state.isRunning ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
+                >
+                  {this.state.isRunning ? (
+                    <><i className="fas fa-circle-notch fa-spin"></i> Running...</>
+                  ) : (
+                    <><i className="fas fa-play"></i> Run</>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Monaco Code Editor */}
+            <div className="ide-wrapper">
+              <Editor
+                value={this.state.input}
+                language={LANGUAGE_MAP[this.state.language_id] || "cpp"}
+                theme={monacoTheme}
+                onChange={this.handleEditorChange}
+                options={{
+                  fontSize: this.state.fontSize,
+                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 4,
+                  wordWrap: "on",
+                  lineNumbers: "on",
+                  renderLineHighlight: "line",
+                  matchBrackets: "always",
+                  suggestOnTriggerCharacters: true,
+                  padding: { top: 12 },
+                }}
+              />
             </div>
           </div>
         </Split>

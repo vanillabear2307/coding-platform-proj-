@@ -71,32 +71,55 @@ CORS_ORIGIN=http://localhost:3000
 # Install Express backend dependencies
 npm install
 
-# Install React frontend dependencies
-cd client
-npm install
-cd ..
+# Install dependencies for client
+npm run client-install
 
-# Install FastAPI dependencies
-cd fastapi-service
-python -m venv venv
-# Activate venv: `source venv/bin/activate` (Mac/Linux) or `.\venv\Scripts\activate` (Windows)
-pip install -r requirements.txt
-```
-
-### 4. Run the Application
-You need two terminals to run the full stack:
-
-**Terminal 1 (FastAPI Executor)**:
-```bash
-cd fastapi-service
-# (Ensure venv is activated)
-uvicorn main:app --host 127.0.0.1 --port 8000
-```
-
-**Terminal 2 (Express + React)**:
-```bash
+# Run the client & server with concurrently
 npm run dev
+
+# Run the Express server only
+npm run server
+
+# Run the React client only
+npm run client
+
+# Server runs on http://localhost:5000 and client on http://localhost:3000
 ```
+
+### FastAPI Execution Service Setup
+The platform uses a Python FastAPI microservice to compile and run code inside isolated Docker containers. To set it up:
+
+1. **Navigate to the fastapi-service directory**:
+   ```bash
+   cd fastapi-service
+   ```
+
+2. **Create and activate a virtual environment**:
+   - On Windows:
+     ```bash
+     python -m venv venv
+     .\venv\Scripts\activate
+     ```
+   - On macOS/Linux:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Build the Docker sandbox image**:
+   ```bash
+   docker build -t code-sandbox -f ../docker/Dockerfile.sandbox .
+   ```
+
+5. **Run the FastAPI service**:
+   ```bash
+   uvicorn main:app --port 8001 --reload
+   ```
 The React frontend will automatically open at `http://localhost:3000`.
 
 ---

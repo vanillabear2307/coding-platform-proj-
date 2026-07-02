@@ -16,10 +16,13 @@ const Routes = (props) => {
       <Switch>
         <Route exact path="/" component={Main} />
         <Route exact path="/thanks/:name" component={Thanks} />
-        <Route exact path="/add" render={(routeProps) => <Form {...routeProps} authenticated={props.authenticated} />} />
-        <Route exact path="/compete" render={(routeProps) => <QuestionPage {...routeProps} authenticated={props.authenticated} />} />
-        <Route exact path="/codingpage/:id" component={Codingpage} />
-        <Route exact path="/profile/:id" component={profile} />
+        <Route exact path="/add" render={(routeProps) => <Form {...routeProps} authenticated={props.authenticated} user={props.user} />} />
+        <Route exact path="/compete" render={(routeProps) => <QuestionPage {...routeProps} authenticated={props.authenticated} user={props.user} />} />
+        <Route exact path="/codingpage/:id" render={(routeProps) => <Codingpage {...routeProps} authenticated={props.authenticated} user={props.user} />} />
+        <Route exact path="/profile/:id" render={(routeProps) => {
+          const ProfileComponent = profile;
+          return <ProfileComponent {...routeProps} authenticated={props.authenticated} user={props.user} />;
+        }} />
         <Route component={Errorpage} />
       </Switch>
       <Footer />

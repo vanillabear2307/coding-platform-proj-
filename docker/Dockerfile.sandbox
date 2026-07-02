@@ -1,0 +1,21 @@
+FROM alpine:3.18
+
+# Install compilers and runtimes for C, C++, Java, and Python 3
+RUN apk add --no-cache \
+    gcc \
+    g++ \
+    openjdk17-jdk \
+    python3 \
+    bash
+
+# Create a non-privileged user to execute untrusted code securely
+RUN addgroup -S sandbox && adduser -S sandbox -G sandbox
+
+# Setup working directory with appropriate permissions
+WORKDIR /app
+RUN chown sandbox:sandbox /app
+
+# Switch to non-privileged user
+USER sandbox
+
+CMD ["/bin/bash"]

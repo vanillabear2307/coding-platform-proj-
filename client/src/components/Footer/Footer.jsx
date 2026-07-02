@@ -44,9 +44,9 @@ function Footer() {
       <section className="social-media">
         <div className="social-media-wrap">
           <Link to="/" className="social-logo">
-            ⚡ CodeArena
+            ⚡ Code Prep
           </Link>
-          <small className="website-rights">CodeArena © 2026</small>
+          <small className="website-rights">Code Prep © 2026</small>
           <div className="social-icons">
             <Link
               className="social-icon-link facebook"

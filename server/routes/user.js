@@ -6,7 +6,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const auth = require("../middleware/auth");
+const combinedAuth = require("../middleware/combined-auth");
 const User = require("../model/user-model");
+const Submission = require("../model/submission");
 
 /**
  * @method - POST
@@ -151,6 +153,61 @@ router.get("/me", auth, async (req, res) => {
     res.json(user);
   } catch (e) {
     res.send({ message: "Error in Fetching user" });
+  }
+});
+
+router.post("/solved/:questionId", combinedAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ err: "User not found" });
+
+    if (!user.solvedProblems.includes(req.params.questionId)) {
+      user.solvedProblems.push(req.params.questionId);
+      await user.save();
+    }
+    res.status(200).json({ message: "Solved state updated", solvedProblems: user.solvedProblems });
+  } catch (err) {
+    console.error("Error updating solved problems:", err);
+    res.status(500).json({ err: "Server Error" });
+  }
+});
+
+router.post("/submission", combinedAuth, async (req, res) => {
+  try {
+    const { questionId, language, code, status, passedCases, totalCases } = req.body;
+    
+    if (!questionId || !language || !code || !status || passedCases === undefined || !totalCases) {
+      return res.status(400).json({ err: "Missing submission fields" });
+    }
+
+    const submission = new Submission({
+      user: req.user.id,
+      question: questionId,
+      language,
+      code,
+      status,
+      passedCases,
+      totalCases
+    });
+
+    await submission.save();
+    res.status(200).json({ message: "Submission recorded successfully", submission });
+  } catch (err) {
+    console.error("Error creating submission:", err);
+    res.status(500).json({ err: "Server Error" });
+  }
+});
+
+router.get("/submissions/:userId", combinedAuth, async (req, res) => {
+  try {
+    const submissions = await Submission.find({ user: req.params.userId })
+      .populate("question", "title")
+      .sort({ submittedAt: -1 })
+      .limit(50);
+    res.status(200).json(submissions);
+  } catch (err) {
+    console.error("Error fetching submissions:", err);
+    res.status(500).json({ err: "Server Error" });
   }
 });
 

@@ -1,4 +1,5 @@
 const express = require("express");
+const { check, validationResult } = require("express-validator");
 const Question = require("../model/question");
 const router = express.Router();
 
@@ -40,6 +41,16 @@ router.get("/all", async (req, res) => {
     res.status(500).send({ err: "Server Error" });
   }
 });
+router.get("/count", async (req, res) => {
+  try {
+    const count = await Question.countDocuments();
+    res.status(200).json({ count });
+  } catch (err) {
+    console.error("Error fetching question count:", err);
+    res.status(500).send({ err: "Server Error" });
+  }
+});
+
 // ✅ auth guard using Passport session (Google OAuth) — matches how the AddQuestion form authenticates
 const requireSessionAuth = (req, res, next) => {
   if (!req.user) {
@@ -48,29 +59,51 @@ const requireSessionAuth = (req, res, next) => {
   next();
 };
 
-router.post("/add", requireSessionAuth, async (req, res) => {
-  try {
-    let testCasesVal = req.body.testCases;
-    if (typeof testCasesVal === "string") {
-      testCasesVal = JSON.parse(testCasesVal);
+router.post(
+  "/add",
+  requireSessionAuth,
+  [
+    check("title", "Title is required").not().isEmpty(),
+    check("language", "Language is required").not().isEmpty(),
+    check("tag", "Tag is required").not().isEmpty(),
+    check("description", "Description is required").not().isEmpty(),
+    check("instruction", "Instruction is required").not().isEmpty(),
+    check("medium", "Medium is required").not().isEmpty(),
+    check("solution", "Solution is required").not().isEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ err: errors.array().map(e => e.msg).join(", ") });
     }
 
-    let question = new Question({
-      title: req.body.title,
-      language: req.body.language,
-      tag: req.body.tag,
-      description: req.body.description,
-      instruction: req.body.instruction,
-      medium: req.body.medium,
-      solution: req.body.solution,
-      testCases: testCasesVal,
-    });
+    try {
+      let testCasesVal = req.body.testCases;
+      if (typeof testCasesVal === "string") {
+        testCasesVal = JSON.parse(testCasesVal);
+      }
 
-    await question.save();
-    res.status(200).json({ message: "Saved Successfully" });
-  } catch (e) {
-    console.error("Error adding question:", e);
-    res.status(400).json({ err: e.message || "Something Went Wrong" });
+      if (!testCasesVal || !Array.isArray(testCasesVal) || testCasesVal.length === 0) {
+        return res.status(400).json({ err: "At least one test case is required" });
+      }
+
+      let question = new Question({
+        title: req.body.title,
+        language: req.body.language,
+        tag: req.body.tag,
+        description: req.body.description,
+        instruction: req.body.instruction,
+        medium: req.body.medium,
+        solution: req.body.solution,
+        testCases: testCasesVal,
+      });
+
+      await question.save();
+      res.status(200).json({ message: "Saved Successfully" });
+    } catch (e) {
+      console.error("Error adding question:", e);
+      res.status(400).json({ err: e.message || "Something Went Wrong" });
+    }
   }
-});
+);
 module.exports = router;

@@ -3,6 +3,7 @@ import API_BASE from "./config";
 import Routes from "./routes/routes";
 import Navbar from "./components/Navbar/Navbar";
 import { ThemeProvider } from "./ThemeContext";
+import { ToastContainer } from "./components/Toast/Toast";
 import "./App.css";
 
 class App extends Component {
@@ -58,6 +59,7 @@ class App extends Component {
               user={this.state.user}
             />
           </div>
+          <ToastContainer />
         </div>
       </ThemeProvider>
     );

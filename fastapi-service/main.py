@@ -14,12 +14,18 @@ Run with:
 import asyncio
 import json
 import os
+import time
+from collections import defaultdict
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from executor import execute_code
 from ai import router as ai_router
@@ -31,11 +37,26 @@ load_dotenv()
 # App setup
 # ---------------------------------------------------------------------------
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="Coding Platform — FastAPI Service",
     description="Code execution engine and AI features for the coding platform.",
     version="1.0.0",
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Simple WebSocket rate limiter: max 20 executions per minute per client IP
+ws_rates = defaultdict(list)
+
+def check_ws_rate_limit(client_ip: str) -> bool:
+    current_time = time.time()
+    # Filter timestamps in the last 60 seconds
+    ws_rates[client_ip] = [t for t in ws_rates[client_ip] if current_time - t < 60]
+    if len(ws_rates[client_ip]) >= 20:
+        return False
+    ws_rates[client_ip].append(current_time)
+    return True
 
 # CORS — allow the Vite dev server and production origins
 origins = [
@@ -69,8 +90,8 @@ async def health():
 # ---------------------------------------------------------------------------
 
 class ExecuteRequest(BaseModel):
-    language: str
-    code: str
+    language: Literal["c", "cpp", "java", "python", "python3"]
+    code: str = Field(..., max_length=65536)  # limit code to 64 KB
     stdin: Optional[str] = None
 
 
@@ -81,7 +102,8 @@ class ExecuteResponse(BaseModel):
 
 
 @app.post("/execute", response_model=ExecuteResponse)
-async def execute_rest(req: ExecuteRequest):
+@limiter.limit("20/minute")
+async def execute_rest(req: ExecuteRequest, request: Request):
     """Run code and return the full output when finished."""
     chunks: list[str] = []
     result_holder: dict = {}
@@ -129,6 +151,20 @@ async def execute_ws(websocket: WebSocket):
             language = data.get("language", "")
             code = data.get("code", "")
             stdin = data.get("stdin")
+
+            # Validate input data
+            if language not in ["c", "cpp", "java", "python", "python3"]:
+                await websocket.send_json({"type": "done", "result": {"status": "error", "message": f"Unsupported language: {language}"}})
+                continue
+            if not code or len(code) > 65536:
+                await websocket.send_json({"type": "done", "result": {"status": "error", "message": "Code cannot be empty and must be under 64KB"}})
+                continue
+
+            # Check rate limit
+            client_ip = websocket.client.host if websocket.client else "unknown"
+            if not check_ws_rate_limit(client_ip):
+                await websocket.send_json({"type": "done", "result": {"status": "error", "message": "Rate limit exceeded (max 20 submissions/min). Please wait a moment."}})
+                continue
 
             async def on_output(text: str):
                 try:

@@ -14,6 +14,7 @@ const userRoutes = require("./server/routes/user");
 const User = require("./server/model/user-model");
 const keys = require("./server/config/keys");
 const cookieParser = require("cookie-parser"); // parse cookie header
+const authCheck = require("./server/middleware/authCheck");
 const app = express();
 
 // Trust proxies (Cloudflare Tunnel) so secure cookies work
@@ -24,8 +25,12 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.DB_MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  // useCreateIndex removed — deprecated and removed in Mongoose 6+
-});
+})
+  .then(() => console.log("MongoDB connected successfully"))
+  .catch(err => {
+    console.error("MongoDB connection failed:", err.message);
+    process.exit(1);
+  });
 
 
 
@@ -92,17 +97,6 @@ if (process.env.NODE_ENV === 'production') {
 
 
 
-
-const authCheck = (req, res, next) => {
-  if (!req.user) {
-    res.status(401).json({
-      authenticated: false,
-      message: "user has not been authenticated",
-    });
-  } else {
-    next();
-  }
-};
 
 // if it's already login, send the profile response,
 // otherwise, send a 401 response that the user is not authenticated

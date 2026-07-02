@@ -3,4 +3,4 @@ uvicorn[standard]==0.30.6
 docker==7.1.0
 python-dotenv==1.0.1
 httpx==0.27.0
-# pymongo and motor removed — not imported anywhere in the codebase
+slowapi==0.1.9

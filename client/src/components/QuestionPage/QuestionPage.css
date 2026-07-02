@@ -255,3 +255,52 @@
     gap: 12px;
   }
 }
+
+/* Status Badges */
+.status-solved {
+  color: var(--success);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.status-unsolved {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* Skeleton Loader styles */
+.skeleton-row td {
+  cursor: default !important;
+}
+
+.skeleton-cell {
+  background: var(--bg-surface);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  height: 20px;
+}
+
+.skeleton-cell::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
