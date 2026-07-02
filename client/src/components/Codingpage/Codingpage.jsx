@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
 import Instructions from "./Instructions/Instructions";
 import "./Codingpage.css";
 import Solution from "./Solution/Solution";
@@ -54,8 +52,9 @@ export default class Codingpage extends Component {
     const { match } = this.props;
  
     try {
+      // ✅ fixed: was malformed `/:?id=...` — now uses correct path param
       const response = await fetch(
-        `${API_BASE}/question/id/:?id=${match.params.id}`,
+        `${API_BASE}/question/id/${match.params.id}`,
         { credentials: 'include' }
       );
 

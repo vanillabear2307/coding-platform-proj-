@@ -8,7 +8,7 @@ Serves:
   - GET      /docs         — auto-generated OpenAPI documentation
 
 Run with:
-  uvicorn main:app --port 8000 --reload
+  uvicorn main:app --port 8001 --reload
 """
 
 import asyncio

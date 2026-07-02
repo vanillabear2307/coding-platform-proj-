@@ -3,7 +3,7 @@ import { Redirect } from "react-router";
 import "./profile.css";
 import API_BASE from "../../config";
 
-export default class App extends Component {
+export default class Profile extends Component { // ✅ fixed: was named 'App'
   constructor(props) {
     super(props);
     this.state = {
@@ -11,14 +11,15 @@ export default class App extends Component {
     };
   }
  
-  componentWillMount = async () => {
+  componentDidMount = async () => { // ✅ fixed: was deprecated componentWillMount
     await this.renderMyData();
   }
  
   renderMyData = async () => {
     const { match } = this.props;
     try {
-      const response = await fetch(`${API_BASE}/profile/:?id=${this.props.match.params.id}`, {
+      // ✅ fixed: was malformed `/:?id=...` — now uses correct path param
+      const response = await fetch(`${API_BASE}/profile/${match.params.id}`, {
         credentials: 'include'
       });
 

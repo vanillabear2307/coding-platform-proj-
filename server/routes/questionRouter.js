@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/id/:id", async (req, res) => {
   try {
-    let questions = await Question.find({ _id: req.query.id });
+    const questions = await Question.find({ _id: req.params.id }); // ✅ fixed: was req.query.id
     if (questions && questions.length > 0) {
       return res.status(200).json(questions);
     }
@@ -15,7 +15,9 @@ router.get("/id/:id", async (req, res) => {
   }
 });
 
-router.get("/:info", async (req, res) => {
+// ✅ fixed: was /:info wildcard (malformed client URLs used "/:?language=...")
+// Now uses a stable /all route that the client calls with proper query params
+router.get("/all", async (req, res) => {
   try {
     let query = {};
     if (req.query.language && req.query.language !== "all") {
@@ -28,7 +30,7 @@ router.get("/:info", async (req, res) => {
       query.tag = req.query.tag;
     }
     
-    let questions = await Question.find(query);
+    const questions = await Question.find(query);
     if (questions) {
       return res.status(200).json(questions);
     }
@@ -38,7 +40,15 @@ router.get("/:info", async (req, res) => {
     res.status(500).send({ err: "Server Error" });
   }
 });
-router.post("/add", async (req, res) => {
+// ✅ auth guard using Passport session (Google OAuth) — matches how the AddQuestion form authenticates
+const requireSessionAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ err: "Authentication required" });
+  }
+  next();
+};
+
+router.post("/add", requireSessionAuth, async (req, res) => {
   try {
     let testCasesVal = req.body.testCases;
     if (typeof testCasesVal === "string") {

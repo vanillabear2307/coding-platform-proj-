@@ -8,7 +8,7 @@ require("dotenv").config();
 const cookieSession = require("cookie-session");
 const passport = require("passport");
 const passportSetup = require("./server/config/passport-setup");
-const session = require("express-session");
+// express-session removed — app uses cookie-session instead
 const authRoutes = require("./server/routes/auth-routes");
 const userRoutes = require("./server/routes/user");
 const User = require("./server/model/user-model");
@@ -24,7 +24,7 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.DB_MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useCreateIndex: true,
+  // useCreateIndex removed — deprecated and removed in Mongoose 6+
 });
 
 
@@ -64,12 +64,16 @@ app.use(
 // set up routes
 app.use("/question", questionRouter);
 app.get("/profile/:id", async (req, res) => {
-  let user = await User.find({ _id: req.query.id });
-
-  if (user) {
-    return res.status(200).json(user);
+  try {
+    const user = await User.findById(req.params.id); // ✅ fixed: was req.query.id
+    if (user) {
+      return res.status(200).json([user]); // wrap in array to match client expectation
+    }
+    res.send({ err: "No User Found" });
+  } catch (err) {
+    console.error("Error fetching profile:", err);
+    res.status(400).send({ err: "Invalid User ID" });
   }
-  res.send({ err: "No User Found" });
 });
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);

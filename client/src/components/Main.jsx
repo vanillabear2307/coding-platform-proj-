@@ -1,24 +1,7 @@
-import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 
 const Main = () => {
-  const [joined, setJoined] = useState("");
-  const history = useHistory();
-
-  const join = (e) => {
-    e.preventDefault();
-    if (joined !== "") {
-      let today = new Date();
-      let date =
-        today.getFullYear() +
-        "-" +
-        (today.getMonth() + 1) +
-        "-" +
-        today.getDate();
-      history.push(`/thanks/${joined}`, date);
-    }
-  };
-
   return (
     <React.Fragment>
       {/* Hero Section */}

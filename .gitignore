@@ -39,3 +39,7 @@ yarn-debug.log*
 yarn-error.log*
 .env
 __pycache__/
+
+# Executor temp directories (Docker sandbox working dirs)
+server/executor/temp/
+fastapi-service/temp/

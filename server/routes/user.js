@@ -61,9 +61,9 @@ router.post(
 
       jwt.sign(
         payload,
-        "randomString",
+        process.env.JWT_SECRET, // ✅ fixed: was hardcoded "randomString"
         {
-          expiresIn: 10000,
+          expiresIn: process.env.JWT_EXPIRES_IN || "24h",
         },
         (err, token) => {
           if (err) throw err;
@@ -120,9 +120,9 @@ router.post(
 
       jwt.sign(
         payload,
-        "randomString",
+        process.env.JWT_SECRET, // ✅ fixed: was hardcoded "randomString"
         {
-          expiresIn: 3600,
+          expiresIn: process.env.JWT_EXPIRES_IN || "24h",
         },
         (err, token) => {
           if (err) throw err;

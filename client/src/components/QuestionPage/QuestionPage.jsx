@@ -39,9 +39,9 @@ export default class MainPage extends Component {
   }
   handleFilter = async () => {
     try {
-      
+      // ✅ fixed: was malformed `/:?language=...` — now uses /question/all with proper query params
       const response = await fetch(
-        `${API_BASE}/question/:?language=${this.state.language}&tag=${this.state.tag}&medium=${this.state.medium}`,
+        `${API_BASE}/question/all?language=${this.state.language}&tag=${this.state.tag}&medium=${this.state.medium}`,
         { credentials: 'include' }
       );
   

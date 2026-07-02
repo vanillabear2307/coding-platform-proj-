@@ -46,6 +46,13 @@ export default class Navbar extends Component {
   };
   componentDidMount() {
     this.showButton();
+    // ✅ fixed: was added inside render() causing a new listener on every re-render
+    window.addEventListener("resize", this.showButton);
+  }
+
+  componentWillUnmount() {
+    // ✅ fixed: now properly removed to prevent memory leak
+    window.removeEventListener("resize", this.showButton);
   }
   _handleSignInClick = () => {
     // Authenticate using via passport api in the backend
@@ -64,7 +71,6 @@ export default class Navbar extends Component {
     const { user } = this.props;
     const { theme, toggleTheme } = this.context;
 
-    window.addEventListener("resize", this.showButton);
     return (
       <>
         <nav className="navbar">

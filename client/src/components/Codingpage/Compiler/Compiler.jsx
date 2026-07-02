@@ -246,7 +246,7 @@ export default class Compiler extends Component {
            resultObj.memory = jsonGetSolution.memory_used_kb;
            resultObj.stderr = jsonGetSolution.stderr;
            
-           if (output.trim() == testCases[i].output.trim()) {
+           if (output.trim() === testCases[i].output.trim()) { // ✅ fixed: was == (loose equality)
              testPassed++;
              resultObj.status = "Accepted";
            } else {

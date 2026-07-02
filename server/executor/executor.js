@@ -47,8 +47,9 @@ async function executeCode(language, code, stdin, onOutput, onDone) {
         command += ' < input.txt';
     }
 
+    let container;
     try {
-        const container = await docker.createContainer({
+        container = await docker.createContainer({
             Image: 'code-sandbox',
             Cmd: ['sh', '-c', command],
             User: 'sandbox',
@@ -88,19 +89,8 @@ async function executeCode(language, code, stdin, onOutput, onDone) {
             }
         });
 
-        stream.on('end', async () => {
-            // Clean up when done
-            try {
-                await container.remove();
-                fs.rmSync(tempDir, { recursive: true, force: true });
-            } catch (cleanupError) {
-                console.error('Cleanup error:', cleanupError);
-            }
-            onDone({ status: 'success' });
-        });
-
         // Set a timeout of 10 seconds to kill the container if it runs too long
-        setTimeout(async () => {
+        const timeoutHandle = setTimeout(async () => {
             try {
                 const containerInfo = await container.inspect();
                 if (containerInfo.State.Running) {
@@ -112,8 +102,22 @@ async function executeCode(language, code, stdin, onOutput, onDone) {
             }
         }, 10000);
 
+        await new Promise((resolve) => {
+            stream.on('end', resolve);
+        });
+
+        clearTimeout(timeoutHandle);
+        onDone({ status: 'success' });
+
     } catch (error) {
         onDone({ status: 'error', message: error.message });
+    } finally {
+        // ✅ fixed: always clean up container + temp dir (was only in catch before)
+        if (container) {
+            try {
+                await container.remove({ force: true });
+            } catch (e) {}
+        }
         try {
             fs.rmSync(tempDir, { recursive: true, force: true });
         } catch (e) {}
