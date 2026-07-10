@@ -9,7 +9,7 @@
     "start": "node server.js",
     "client": "npm start --prefix client",
     "server": "nodemon server.js",
-    "fastapi": "cd fastapi-service && python -m uvicorn main:app --port 8001 --reload",
+    "fastapi": "cd fastapi-service && .\\venv\\Scripts\\python -m uvicorn main:app --port 8001 --reload",
     "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run fastapi\"",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
